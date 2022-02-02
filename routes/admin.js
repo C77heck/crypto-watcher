@@ -7,7 +7,6 @@ router.post('/signin',
     [
         check('accountID').not().isEmpty().escape().trim(),
         check('password').not().isEmpty()
-
     ], signin);
 
 module.exports = router;
