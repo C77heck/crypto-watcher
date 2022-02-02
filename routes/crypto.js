@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const {getPrices} = require('../controllers/crypto-controller');
+const {getLatestListings, getNewListings, getAllCryptos} = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
 router.use(checkAuth);
 
-router.get('/', getPrices)
+router.get('/latest', getLatestListings)
 
-router.get('/prices', [], getPrices);
+router.get('/new_cryptos', getNewListings);
+
+router.get('/all_cryptos', getAllCryptos);
 
 module.exports = router;
