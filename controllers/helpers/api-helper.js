@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const getLatestListings = async () => {
+const latestListings = async () => {
     return new Promise(async (resolve, reject) => {
         try {
             const response = await axios.get(`${process.env.API_ENDPOINT_LISTINGS}latest`, {
@@ -21,7 +21,7 @@ const getLatestListings = async () => {
     });
 }
 
-const getNewListings = async () => {
+const newListings = async () => {
     return new Promise(async (resolve, reject) => {
         try {
             const response = await axios.get(`${process.env.API_ENDPOINT_LISTINGS}new`, {
@@ -41,7 +41,7 @@ const getNewListings = async () => {
         }
     });
 }
-const getAllCryptos = async () => {
+const allCryptos = async () => {
     return new Promise(async (resolve, reject) => {
         try {
             const response = await axios.get(`${process.env.API_ENDPOINT_CRYPTOS}map`, {
@@ -62,7 +62,7 @@ const getAllCryptos = async () => {
     });
 }
 
-exports.getLatestListings = getLatestListings;
-exports.getNewListings = getNewListings;
-exports.getAllCryptos = getAllCryptos;
+exports.latestListings = latestListings;
+exports.newListings = newListings;
+exports.allCryptos = allCryptos;
 

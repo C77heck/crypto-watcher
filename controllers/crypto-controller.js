@@ -1,12 +1,9 @@
-const bcrypt = require('bcryptjs');
-const {validationResult} = require('express-validator');
 const HttpError = require('../models/http-error');
-const Admin = require('../models/admin');
 const Price = require('../models/price');
-const {getLatestListings, getNewListings, getAllCryptos} = require("./helpers/api-helper");
+const {latestListings, newListings, allCryptos} = require("./helpers/api-helper");
 
 const getLatestListings = async (req, res, next) => {
-    const listings = await getLatestListings();
+    const listings = await latestListings();
     const price = new Price({
         name: '',
         price: 0,
@@ -29,12 +26,12 @@ const getLatestListings = async (req, res, next) => {
     res.json({listings})
 }
 const getNewListings = async (req, res, next) => {
-    const newCryptos = await getNewListings();
+    const newCryptos = await newListings();
     console.log({newCryptos});
     res.json({newCryptos})
 }
 const getAllCryptos = async (req, res, next) => {
-    const allCryptos = await getAllCryptos();
+    const allCryptos = await allCryptos();
     console.log({allCryptos});
     res.json({allCryptos})
 }
