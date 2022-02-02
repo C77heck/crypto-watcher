@@ -1,17 +1,15 @@
 const express = require('express');
-const {check, sanitize, body} = require('express-validator')
-const {signin, signup} = require('../controllers/admin-controller')
+const {check, body} = require('express-validator')
+const {login, signup} = require('../controllers/admin-controller')
 const router = express.Router();
 
-router.post('/signin',
+router.post('/login',
     [
-        sanitize('*'),
-        check('accountID').not().isEmpty().escape().trim(),
+        check('email').not().isEmpty().escape().trim(),
         check('password').not().isEmpty()
-    ], signin);
+    ], login);
 
 router.post('/signup', [
-    sanitize('*'),
     body('*').trim().escape(),
     check('name').not().isEmpty(),
     check('email').normalizeEmail().isEmail(),

@@ -3,9 +3,10 @@ const {validationResult} = require('express-validator');
 const HttpError = require('../models/http-error');
 const Admin = require('../models/admin');
 const {handleError} = require("./helpers/error-handler");
+const jwt = require('jsonwebtoken');
 
-const signin = async (req, res, next) => {
-    handleError(req);
+const login = async (req, res, next) => {
+    handleError(req, next);
     const {email, password} = req.body;
     let existingUser;
     try {
@@ -53,8 +54,9 @@ const signin = async (req, res, next) => {
             {expiresIn: '24h'}
         )
     } catch (err) {
+        console.log(err);
         return next(new HttpError(
-            ' Signing in failed, please try again',
+            ' Login failed, please try again',
             500
         ))
     }
@@ -68,7 +70,7 @@ const signin = async (req, res, next) => {
 }
 
 const signup = async (req, res, next) => {
-    handleError(req);
+    handleError(req, next);
     const {name, email, password, hint, answer} = req.body;
     let existingUser;
     try {
@@ -99,8 +101,9 @@ const signup = async (req, res, next) => {
     try {
         await createdAdmin.save();
     } catch (err) {
+        console.log(err);
         return next(new HttpError(
-            'Signing up failed, please try again',
+            'Login failed, please try again',
             500
         ))
     }
@@ -112,9 +115,9 @@ const signup = async (req, res, next) => {
             {expiresIn: '24h'}
         )
     } catch (err) {
-
+        console.log(err);
         return next(new HttpError(
-            ' Signing up failed, please try again',
+            ' Login failed, please try again',
             500
         ))
     }
@@ -122,5 +125,6 @@ const signup = async (req, res, next) => {
     res.status(201).json({userData: {userId: createdUser.id, token: token}})
 }
 
-exports.signin = signin;
+exports.login = login;
 exports.signup = signup;
+

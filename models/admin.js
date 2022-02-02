@@ -10,8 +10,8 @@ const adminSchema = new Schema({
     hint: {type: String, required: true},
     answer: {type: String, required: true},
     status: {
-        loginAttempts: {type: Number, required: true},
-        isBlocked: {type: Boolean, required: true}
+        loginAttempts: {type: Number, required: false, default: 0},
+        isBlocked: {type: Boolean, required: false, default: false}
     }
 });
 

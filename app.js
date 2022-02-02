@@ -3,9 +3,9 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
-const Redis = require("ioredis");
 const HttpError = require('./models/http-error');
 const adminRouter = require('./routes/admin');
+const cryptoRouter = require('./routes/crypto');
 const app = express();
 
 const {get, set} = require('./libs/redis-client');
@@ -23,7 +23,8 @@ app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api', adminRouter);
+app.use('/api/users', adminRouter);
+app.use('/api/crypto', cryptoRouter);
 
 app.use(() => {
     throw new HttpError('Could not find this route.', 404);
