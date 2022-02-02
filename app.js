@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 
 const port = process.env.PORT || 3030;
-
+process.env['BIIIITCH'] = 'production'
 console.log(process.env);
 mongoose
     .connect(process.env.MONGO_URL,
