@@ -56,7 +56,7 @@ const login = async (req, res, next) => {
     } catch (err) {
         console.log(err);
         return next(new HttpError(
-            ' Login failed, please try again',
+            'Login failed, please try again',
             500
         ))
     }
@@ -117,7 +117,7 @@ const signup = async (req, res, next) => {
     } catch (err) {
         console.log(err);
         return next(new HttpError(
-            ' Login failed, please try again',
+            'Login failed, please try again',
             500
         ))
     }

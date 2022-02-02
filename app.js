@@ -8,8 +8,6 @@ const adminRouter = require('./routes/admin');
 const cryptoRouter = require('./routes/crypto');
 const app = express();
 
-const {get, set} = require('./libs/redis-client');
-
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -30,7 +28,6 @@ app.use(() => {
     throw new HttpError('Could not find this route.', 404);
 });
 
-
 (async () => {
     try {
         const port = process.env.PORT || 3030;
@@ -40,6 +37,5 @@ app.use(() => {
         console.log(e);
     }
 })();
-
 
 module.exports = app;
