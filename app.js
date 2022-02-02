@@ -3,9 +3,12 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
+const Redis = require("ioredis");
 const HttpError = require('./models/http-error');
 const adminRouter = require('./routes/admin');
 const app = express();
+
+const {get, set} = require('./libs/redis-client');
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -36,5 +39,6 @@ app.use(() => {
         console.log(e);
     }
 })();
+
 
 module.exports = app;
