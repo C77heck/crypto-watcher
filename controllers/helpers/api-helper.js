@@ -9,11 +9,10 @@ const latestListings = async () => {
                     'Accept': 'application/json',
                     'Accept-Encoding': 'deflate, gzip',
                 },
-                query: {
+                params: {
                     convert: 'HUF'
                 }
             });
-
             resolve(response?.data);
         } catch (err) {
             reject(err);
@@ -30,7 +29,7 @@ const newListings = async () => {
                     'Accept': 'application/json',
                     'Accept-Encoding': 'deflate, gzip',
                 },
-                query: {
+                params: {
                     convert: 'HUF'
                 }
             });
@@ -50,9 +49,6 @@ const allCryptos = async () => {
                     'X-CMC_PRO_API_KEY': process.env.API_KEY,
                     'Accept': 'application/json',
                     'Accept-Encoding': 'deflate, gzip',
-                },
-                query: {
-                    convert: 'HUF'
                 }
             });
 
