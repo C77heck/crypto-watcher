@@ -41,6 +41,7 @@ const newListings = async () => {
         }
     });
 }
+
 const allCryptos = async () => {
     return new Promise(async (resolve, reject) => {
         try {
