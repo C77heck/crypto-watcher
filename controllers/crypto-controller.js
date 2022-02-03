@@ -2,7 +2,7 @@ const HttpError = require('../models/http-error');
 const Price = require('../models/prices');
 const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set} = require('../libs/redis-client');
-const {json} = require('../libs/helpers');
+const {json, removeDuplicates} = require('../libs/helpers');
 
 const getLatestListings = async (req, res, next) => {
     const listings = await latestListings();
@@ -33,21 +33,29 @@ const savePrices = async (listings, date) => {
 }
 
 const startFollowing = async (req, res, next) => {
-    const {cryptos} = req.body;
-    const followedCryptos = json(get('cryptos-to-follow'), []);
-    const combined = [...(followedCryptos || []), cryptos];
-    await set('cryptos-to-follow', combined);
+    try {
+        const {cryptos} = req.body;
+        const followedCryptos = json(await get('cryptos-to-follow'), []);
+        const combined = removeDuplicates([...(followedCryptos || []), ...cryptos]);
+        await set('cryptos-to-follow', json(combined));
 
-    res.json({combined})
+        res.json({combined, followedCryptos})
+    } catch (e) {
+        return next(new HttpError('Sorry, something went wrong.', 500));
+    }
 }
 
 const stopFollowing = async (req, res, next) => {
-    const {cryptos} = req.body;
-    const followedCryptos = json(get('cryptos-to-follow'), []);
-    const newFollowedCryptos = (followedCryptos || []).filter(item => !cryptos.includes(item.name))
-    await set('cryptos-to-follow', newFollowedCryptos);
+    try {
+        const {cryptos} = req.body;
+        const followedCryptos = json(await get('cryptos-to-follow'), []);
+        const filtered = (followedCryptos || []).filter(item => !cryptos.includes(item))
+        await set('cryptos-to-follow', json(filtered));
 
-    res.json({newFollowedCryptos})
+        res.json({filtered})
+    } catch (e) {
+        return next(new HttpError('Sorry, something went wrong.', 500));
+    }
 }
 
 const getNewListings = async (req, res, next) => {

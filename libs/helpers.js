@@ -19,4 +19,10 @@ const json = (obj, defaultReturn) => {
     }
 };
 
+const removeDuplicates = (array) => {
+    return Array.from(new Set(array));
+}
+
+
 exports.json = json;
+exports.removeDuplicates = removeDuplicates;
