@@ -16,15 +16,15 @@ const getLatestListings = async (req, res, next) => {
 
 const savePrices = async (listings, date) => {
     for (const listing of listings) {
-        const {id, name, symbol, quote: {HUF: {price, percent_change_1h}},} = listing;
-        const createdPrice = new Price({
-            name, symbol, price, date,
-            identifier: id,
-            date: new Date(),
-            percentChangeLastHour: percent_change_1h,
-        });
-
         try {
+            const {id, name, symbol, quote: {HUF: {price, percent_change_1h}},} = listing;
+            const createdPrice = new Price({
+                name, symbol, price, date,
+                identifier: id,
+                date: new Date(),
+                percentChangeLastHour: percent_change_1h,
+            });
+
             await createdPrice.save();
         } catch (e) {
             console.log(e);
@@ -60,7 +60,7 @@ const stopFollowing = async (req, res, next) => {
 
 const getNewListings = async (req, res, next) => {
     const newCryptos = await newListings();
-    // TODO -> See the purpose of  this.
+    // TODO -> See what could we use this for.
 
     res.json({newCryptos})
 }
