@@ -9,4 +9,5 @@ module.exports = mongoose.model('Price', new Schema({
     price: {type: Number, required: true},
     symbol: {type: String, required: true},
     date: {type: Date, required: true},
+    percentChangeLastHour: {type: Number, required: true},
 }).plugin(uniqueValidator));

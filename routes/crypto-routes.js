@@ -11,4 +11,8 @@ router.get('/new_cryptos', getNewListings);
 
 router.get('/all_cryptos', getAllCryptos);
 
+router.post('/start-follow', getAllCryptos);
+
+router.delete('/stop-following', getAllCryptos);
+
 module.exports = router;

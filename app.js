@@ -4,8 +4,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const HttpError = require('./models/http-error');
-const adminRouter = require('./routes/admin');
-const cryptoRouter = require('./routes/crypto');
+const adminRouter = require('./routes/admin-routes');
+const cryptoRouter = require('./routes/crypto-routes');
 const app = express();
 
 app.use((req, res, next) => {

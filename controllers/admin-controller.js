@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const {validationResult} = require('express-validator');
 const HttpError = require('../models/http-error');
 const Admin = require('../models/admin');
-const {handleError} = require("./helpers/error-handler");
+const {handleError} = require("../libs/error-handler");
 const jwt = require('jsonwebtoken');
 
 const login = async (req, res, next) => {

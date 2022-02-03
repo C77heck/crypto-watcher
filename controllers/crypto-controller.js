@@ -1,6 +1,8 @@
 const HttpError = require('../models/http-error');
 const Price = require('../models/prices');
-const {latestListings, newListings, allCryptos} = require("./helpers/api-helper");
+const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
+const {get, set} = require('../libs/redis-client');
+const {json} = require('../libs/helpers');
 
 const getLatestListings = async (req, res, next) => {
     const listings = await latestListings();
@@ -14,11 +16,12 @@ const getLatestListings = async (req, res, next) => {
 
 const savePrices = async (listings, date) => {
     for (const listing of listings) {
-        const {id, name, symbol, quote: {HUF: {price}},} = listing;
+        const {id, name, symbol, quote: {HUF: {price, percent_change_1h}},} = listing;
         const createdPrice = new Price({
             name, symbol, price, date,
             identifier: id,
             date: new Date(),
+            percentChangeLastHour: percent_change_1h,
         });
 
         try {
@@ -27,6 +30,24 @@ const savePrices = async (listings, date) => {
             console.log(e);
         }
     }
+}
+
+const startFollowing = async (req, res, next) => {
+    const {cryptos} = req.body;
+    const followedCryptos = json(get('cryptos-to-follow'), []);
+    const combined = [...(followedCryptos || []), cryptos];
+    await set('cryptos-to-follow', combined);
+
+    res.json({combined})
+}
+
+const stopFollowing = async (req, res, next) => {
+    const {cryptos} = req.body;
+    const followedCryptos = json(get('cryptos-to-follow'), []);
+    const newFollowedCryptos = (followedCryptos || []).filter(item => !cryptos.includes(item.name))
+    await set('cryptos-to-follow', newFollowedCryptos);
+
+    res.json({newFollowedCryptos})
 }
 
 const getNewListings = async (req, res, next) => {
@@ -41,7 +62,8 @@ const getAllCryptos = async (req, res, next) => {
     res.json({full_list})
 }
 
-
 exports.getLatestListings = getLatestListings;
 exports.getNewListings = getNewListings;
 exports.getAllCryptos = getAllCryptos;
+exports.startFollowing = startFollowing;
+exports.stopFollowing = stopFollowing;
