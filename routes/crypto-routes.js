@@ -9,7 +9,6 @@ const {
     stopFollowing,
     getShouldSell,
     addNewPurchase,
-    setThreshold,
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
@@ -26,14 +25,9 @@ router.get('/should_sell', getShouldSell);
 router.post('/add_new_purchase', [
     check('name').not().isEmpty().escape().trim(),
     check('symbol').not().isEmpty().escape().trim(),
-    check('price').not().isEmpty().escape().trim().isNumeric()
+    check('price').not().isEmpty().escape().trim().isNumeric(),
+    check('thresholds').not().isEmpty(),
 ], addNewPurchase);
-
-router.post('/set_thresholds', [
-    check('first').not().isEmpty(),
-    check('second').not().isEmpty(),
-    check('third').not().isEmpty()
-], setThreshold);
 
 router.post('/start-following', [check('cryptos').isArray()], startFollowing);
 

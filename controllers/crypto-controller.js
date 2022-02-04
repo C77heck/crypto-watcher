@@ -1,7 +1,6 @@
 const HttpError = require('../models/http-error');
 const Price = require('../models/prices');
 const Purchase = require('../models/purchase');
-const Threshold = require('../models/threshold');
 const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set} = require('../libs/redis-client');
 const {json, removeDuplicates} = require('../libs/helpers');
@@ -61,13 +60,10 @@ const stopFollowing = async (req, res, next) => {
 }
 
 const addNewPurchase = async (req, res, next) => {
-    const {name, symbol, price} = req.body;
+    const {name, symbol, price, thresholds} = req.body;
 
     try {
-        const createdPurchase = new Purchase({
-            name, symbol, price,
-            date: new Date(),
-        });
+        const createdPurchase = new Purchase({name, symbol, price, thresholds, date: new Date()});
 
         await createdPurchase.save();
     } catch (e) {
@@ -97,71 +93,14 @@ const getAllCryptos = async (req, res, next) => {
     res.json({full_list})
 }
 
-const setThreshold = async (req, res, next) => {
-    const {first, second, third} = req.body;
-    const thresholds = await Threshold.get();
-
-    if (!thresholds) {
-        try {
-            const createdThreshold = new Threshold({
-                first: {
-                    flat: first.flat,
-                    percentage: first.percentage,
-                },
-                second: {
-                    flat: second.flat,
-                    percentage: second.percentage,
-                },
-                third: {
-                    flat: third.flat,
-                    percentage: third.percentage,
-                }
-            });
-
-            await createdThreshold.save();
-
-            res.json({thresholds: createdThreshold})
-        } catch (e) {
-            // console.log(e);
-            return next(new HttpError('Sorry, something went wrong.', 500));
-        }
-    } else {
-        try {
-            thresholds.first = {flat: first.flat, percentage: first.percentage};
-            thresholds.first = {flat: first.flat, percentage: first.percentage};
-            thresholds.second = {flat: second.flat, percentage: second.percentage};
-            thresholds.second = {flat: second.flat, percentage: second.percentage};
-            thresholds.third = {flat: third.flat, percentage: third.percentage};
-            thresholds.third = {flat: third.flat, percentage: third.percentage};
-
-            await thresholds.save();
-
-            res.json({thresholds})
-        } catch (e) {
-            console.log(e);
-            return next(new HttpError('Sorry, something went wrong.', 500));
-        }
-    }
-}
-
-const getThresholds = async () => {
-    const thresholds = await Threshold.get();
-
-    return {
-        first: thresholds?.first || {},
-        second: thresholds?.second || {},
-        third: thresholds?.third || {},
-    }
-}
-
 const getShouldSell = async (req, res, next) => {
-    const {first, second, third} = await getThresholds();
     const purchasedCryptos = await Purchase.getAll();
     const data = [];
 
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
         for (const item of purchasedCryptos) {
             const foundItems = (await Price.getLast(item.name) || [])[0] || {};
+            const {first, second, third} = item.thresholds;
             const flatDiff = foundItems.price - item.price;
             const percentageDiff = foundItems.price - item.price; // figure how to calculate this.
             const thresholds = {
@@ -204,4 +143,3 @@ exports.startFollowing = startFollowing;
 exports.stopFollowing = stopFollowing;
 exports.getShouldSell = getShouldSell;
 exports.addNewPurchase = addNewPurchase;
-exports.setThreshold = setThreshold;
