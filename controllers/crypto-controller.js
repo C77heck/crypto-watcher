@@ -78,8 +78,6 @@ const addNewPurchase = async (req, res, next) => {
         const followedCryptos = json(await get('cryptos-to-follow'), []);
         const combined = removeDuplicates([...(followedCryptos || []), name]);
         await set('cryptos-to-follow', json(combined));
-
-        res.json({combined, followedCryptos})
     } catch (e) {
         return next(new HttpError('Sorry, something went wrong.', 500));
     }

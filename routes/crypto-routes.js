@@ -26,13 +26,13 @@ router.get('/should_sell', getShouldSell);
 router.post('/add_new_purchase', [
     check('name').not().isEmpty().escape().trim(),
     check('symbol').not().isEmpty().escape().trim(),
-    check('price').not().isEmpty().escape().trim()
+    check('price').not().isEmpty().escape().trim().isNumeric()
 ], addNewPurchase);
 
 router.post('/set_thresholds', [
-    check('first').not().isEmpty().escape().trim(),
-    check('second').not().isEmpty().escape().trim(),
-    check('third').not().isEmpty().escape().trim()
+    check('first').not().isEmpty().escape().trim().isNumeric(),
+    check('second').not().isEmpty().escape().trim().isNumeric(),
+    check('third').not().isEmpty().escape().trim().isNumeric()
 ], setThreshold);
 
 router.post('/start-following', [check('cryptos').isArray()], startFollowing);
