@@ -1,4 +1,5 @@
 const axios = require('axios');
+const {CONSTANTS: {CURRENCY}} = require('../libs/constants');
 
 const latestListings = async () => {
     return new Promise(async (resolve, reject) => {
@@ -10,7 +11,7 @@ const latestListings = async () => {
                     'Accept-Encoding': 'deflate, gzip',
                 },
                 params: {
-                    convert: 'HUF'
+                    convert: CURRENCY
                 }
             });
             resolve(response?.data);
@@ -30,7 +31,7 @@ const newListings = async () => {
                     'Accept-Encoding': 'deflate, gzip',
                 },
                 params: {
-                    convert: 'HUF'
+                    convert: CURRENCY
                 }
             });
 

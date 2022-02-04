@@ -5,6 +5,7 @@ const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set} = require('../libs/redis-client');
 const {json, removeDuplicates} = require('../libs/helpers');
 const {terminal} = require("../libs/terminal-helper");
+const {CONSTANTS: {CRYPTOS_TO_FOLLOW, CRYPTOS_FOR_SELECT, CURRENCY}} = require('../libs/constants');
 
 const getLatestListings = async (req, res, next) => {
     const listings = await latestListings();
@@ -15,9 +16,9 @@ const getLatestListings = async (req, res, next) => {
             name: crypto.name,
             symbol: crypto.symbol,
             id: crypto.id,
-            price: crypto?.quote?.HUF?.price || 0,
+            price: crypto?.quote[CURRENCY]?.price || 0,
         }));
-        await set('crypto-for-select', json(assets));
+        await set(CRYPTOS_FOR_SELECT, json(assets));
     }
 
     res.json({listings})
@@ -25,7 +26,7 @@ const getLatestListings = async (req, res, next) => {
 
 const getAssets = async (req, res, next) => {
     try {
-        const assets = await get('crypto-for-select');
+        const assets = await get(CRYPTOS_FOR_SELECT);
 
         res.json({assets: !!assets ? json(assets) : []});
     } catch (e) {
@@ -55,9 +56,9 @@ const savePrices = async (listings, date) => {
 const startFollowing = async (req, res, next) => {
     try {
         const {cryptos} = req.body;
-        const followedCryptos = json(await get('cryptos-to-follow'), []);
+        const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
         const combined = removeDuplicates([...(followedCryptos || []), ...cryptos]);
-        await set('cryptos-to-follow', json(combined));
+        await set(CRYPTOS_TO_FOLLOW, json(combined));
 
         res.json({combined, followedCryptos})
     } catch (e) {
@@ -68,9 +69,9 @@ const startFollowing = async (req, res, next) => {
 const stopFollowing = async (req, res, next) => {
     try {
         const {cryptos} = req.body;
-        const followedCryptos = json(await get('cryptos-to-follow'), []);
+        const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
         const filtered = (followedCryptos || []).filter(item => !cryptos.includes(item))
-        await set('cryptos-to-follow', json(filtered));
+        await set(CRYPTOS_TO_FOLLOW, json(filtered));
 
         res.json({filtered})
     } catch (e) {
@@ -80,7 +81,6 @@ const stopFollowing = async (req, res, next) => {
 
 const addNewPurchase = async (req, res, next) => {
     const {name, symbol, price, thresholds} = req.body;
-
     try {
         const createdPurchase = new Purchase({name, symbol, price, thresholds, date: new Date()});
 
@@ -90,9 +90,9 @@ const addNewPurchase = async (req, res, next) => {
     }
 
     try {
-        const followedCryptos = json(await get('cryptos-to-follow'), []);
+        const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
         const combined = removeDuplicates([...(followedCryptos || []), name]);
-        await set('cryptos-to-follow', json(combined));
+        await set(CRYPTOS_TO_FOLLOW, json(combined));
     } catch (e) {
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
@@ -121,19 +121,19 @@ const getShouldSell = async (req, res, next) => {
             const foundItems = (await Price.getLast(item.name) || [])[0] || {};
             const {first, second, third} = item.thresholds;
             const flatDiff = foundItems.price - item.price;
-            const percentageDiff = foundItems.price - item.price; // figure how to calculate this.
+            const percentageDiff = (foundItems.price / item.price) * 100; // figure how to calculate this.
             const thresholds = {
                 first: {
                     flat: getThreshold(first.flat > flatDiff, 'first flat', item.name),
-                    percentage: getThreshold(first.percentage > percentageDiff, 'first percentage', item.name),
+                    percentage: getThreshold(100 > percentageDiff, 'first percentage', item.name),
                 },
                 second: {
                     flat: getThreshold(second.flat > flatDiff, 'second flat', item.name),
-                    percentage: getThreshold(second.percentage > percentageDiff, 'second percentage', item.name),
+                    percentage: getThreshold(100 > percentageDiff, 'second percentage', item.name),
                 },
                 third: {
                     flat: getThreshold(third.flat > flatDiff, 'third flat', item.name),
-                    percentage: getThreshold(third.percentage > percentageDiff, 'third percentage', item.name),
+                    percentage: getThreshold(100 > percentageDiff, 'third percentage', item.name),
                 },
             }
             data.push({flatDiff, percentageDiff, ...thresholds, ...item?._doc || {}});

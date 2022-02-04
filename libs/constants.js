@@ -1,9 +1,7 @@
 const CONSTANTS = {
-    THRESHOLDS: {
-        FIRST: 1,
-        SECOND: 2,
-        THIRD: 3,
-    }
+    CRYPTOS_TO_FOLLOW: 'cryptos-to-follow',
+    CRYPTOS_FOR_SELECT: 'crypto-for-select',
+    CURRENCY: 'HUF',
 }
 
 exports.CONSTANTS = CONSTANTS;
