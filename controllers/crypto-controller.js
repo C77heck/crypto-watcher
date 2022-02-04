@@ -88,7 +88,6 @@ const getAllCryptos = async (req, res, next) => {
 }
 
 const getShouldSell = async (req, res, next) => {
-    const name = req.query.name || '';
     const {FIRST, SECOND, THIRD} = CONSTANTS.THRESHOLDS;
     const purchasedCryptos = await Purchase.getAll();
     const data = [];
