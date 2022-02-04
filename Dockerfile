@@ -1,11 +1,9 @@
-FROM nginx:1.16.0-alpine
+FROM node:14.14.0-alpine3.12
 
-WORKDIR /var/www
 MAINTAINER Csilleri Zoltan <zcsilleri@gmail.com>
 
-RUN apk update
-RUN apk add openrc
-RUN rm /etc/nginx/conf.d/default.conf
+WORKDIR /var/www
 
-ADD ./dist .
-ADD ./scripts/nginx.conf /etc/nginx/conf.d/default.conf
+COPY . .
+COPY config/config.build.js config/config.js
+

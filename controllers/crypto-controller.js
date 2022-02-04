@@ -83,10 +83,9 @@ const addNewPurchase = async (req, res, next) => {
     const {name, symbol, price, thresholds} = req.body;
     try {
         const createdPurchase = new Purchase({name, symbol, price, thresholds, date: new Date()});
-
         await createdPurchase.save();
     } catch (e) {
-        console.log(e);
+        return next(new HttpError('Sorry, something went wrong.', 500));
     }
 
     try {
@@ -108,7 +107,6 @@ const getNewListings = async (req, res, next) => {
 }
 const getAllCryptos = async (req, res, next) => {
     const full_list = await allCryptos();
-
     res.json({full_list})
 }
 
