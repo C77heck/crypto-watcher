@@ -9,12 +9,15 @@ const {
     stopFollowing,
     getShouldSell,
     addNewPurchase,
+    getAssets,
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
 router.use(checkAuth);
 
-router.get('/latest_listings', getLatestListings)
+router.get('/latest_listings', getLatestListings);
+
+router.get('/get_select_assets', getAssets);
 
 router.get('/new_cryptos', getNewListings);
 

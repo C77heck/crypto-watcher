@@ -12,6 +12,8 @@ const terminal = (command) => {
         }
         console.log(`stdout: ${stdout}`);
     })
+    // to call it recursively.
+    // setTimeout(() => terminal(command), 4000)
 }
 
 exports.terminal = terminal;

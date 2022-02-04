@@ -1,9 +1,1 @@
-1. need the api key
-
-2 build out routes to get data and insert new coins we want.
-
-3. build diagnostic tools to work out some good enough data.
-
-4. build out notification service in order to allow it to notify me.
-
-5. we will run this app locally and use redis and mongodb.
+1. docker image to be built

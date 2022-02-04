@@ -1,0 +1,6 @@
+crontab -e
+
+* * * * * ./crypto.sh
+* * * * * ./getallcryptos.sh
+
+run the app as service

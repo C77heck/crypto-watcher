@@ -8,11 +8,30 @@ const {terminal} = require("../libs/terminal-helper");
 
 const getLatestListings = async (req, res, next) => {
     const listings = await latestListings();
+
     if (!!listings.status && !listings.status.error_code) {
         await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
+        const assets = (listings?.data || []).map(crypto => ({
+            name: crypto.name,
+            symbol: crypto.symbol,
+            id: crypto.id
+        }));
+        await set('crypto-for-select', json(assets));
     }
 
     res.json({listings})
+}
+
+const getAssets = async (req, res, next) => {
+    try {
+        const assets = await get('crypto-for-select');
+
+        res.json({assets: !!assets ? json(assets) : []});
+    } catch (e) {
+        console.log(e);
+        return next(new HttpError('Sorry, something went wrong.', 500));
+    }
+
 }
 
 const savePrices = async (listings, date) => {
@@ -143,3 +162,4 @@ exports.startFollowing = startFollowing;
 exports.stopFollowing = stopFollowing;
 exports.getShouldSell = getShouldSell;
 exports.addNewPurchase = addNewPurchase;
+exports.getAssets = getAssets;
