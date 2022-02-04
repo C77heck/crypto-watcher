@@ -7,7 +7,7 @@ const {
     getAllCryptos,
     startFollowing,
     stopFollowing,
-    calculateValues,
+    getShouldSell,
     addNewPurchase,
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
@@ -20,9 +20,13 @@ router.get('/new_cryptos', getNewListings);
 
 router.get('/all_cryptos', getAllCryptos);
 
-router.get('/calculate_values', calculateValues);
+router.get('/should_sell', getShouldSell);
 
-router.post('/add_new_purchase', [check('cryptos').isArray()], addNewPurchase);
+router.post('/add_new_purchase', [
+    check('name').not().isEmpty().escape().trim(),
+    check('symbol').not().isEmpty().escape().trim(),
+    check('price').not().isEmpty().escape().trim()
+], addNewPurchase);
 
 router.post('/start-following', [check('cryptos').isArray()], startFollowing);
 

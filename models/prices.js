@@ -15,5 +15,9 @@ priceSchema.statics.findByName = function (name) {
     return this.where({name: new RegExp(name, 'i')});
 }
 
+priceSchema.statics.getLast = function (name) {
+    return this.where({name: new RegExp(name, 'i')}).sort({_id: -1}).limit(1);
+}
+
 priceSchema.plugin(uniqueValidator)
 module.exports = mongoose.model('Price', priceSchema);

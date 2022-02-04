@@ -1,8 +1,10 @@
 const HttpError = require('../models/http-error');
 const Price = require('../models/prices');
+const Purchase = require('../models/purchase');
 const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set} = require('../libs/redis-client');
 const {json, removeDuplicates} = require('../libs/helpers');
+const {CONSTANTS} = require("../libs/constants");
 
 const getLatestListings = async (req, res, next) => {
     const listings = await latestListings();
@@ -59,9 +61,9 @@ const stopFollowing = async (req, res, next) => {
 
 const addNewPurchase = async (req, res, next) => {
     try {
-        const {name, symbol, price} = listing;
-        const createdPurchase = new Purchased({
-            name, symbol, price, date,
+        const {name, symbol, price} = req.body;
+        const createdPurchase = new Purchase({
+            name, symbol, price,
             date: new Date(),
         });
 
@@ -69,6 +71,7 @@ const addNewPurchase = async (req, res, next) => {
     } catch (e) {
         console.log(e);
     }
+    // will have to follow it too.
     res.json({message: 'Success'})
 }
 
@@ -84,16 +87,25 @@ const getAllCryptos = async (req, res, next) => {
     res.json({full_list})
 }
 
-const calculateValues = async (req, res, next) => {
-    const foundItems = await Price.findByName(req.query.name || '');
-    if (!!foundItems && !!foundItems.length) {
-        // need the price we bought it for for comparison
-        for (const item of foundItems) {
-
+const getShouldSell = async (req, res, next) => {
+    const name = req.query.name || '';
+    const {FIRST, SECOND, THIRD} = CONSTANTS.THRESHOLDS;
+    const purchasedCryptos = await Purchase.getAll();
+    const data = [];
+    if (!!purchasedCryptos && !!purchasedCryptos.length) {
+        for (const item of purchasedCryptos) {
+            const foundItems = (await Price.getLast(item.name) || [])[0] || {};
+            const diff = foundItems.price - item.price;
+            const thresholds = {
+                first: FIRST > diff,
+                second: SECOND > diff,
+                third: THIRD > diff,
+            }
+            data.push({diff, ...thresholds, ...item?._doc || {}});
         }
     }
 
-    res.json({foundItems})
+    res.json({data})
 }
 
 exports.getLatestListings = getLatestListings;
@@ -101,5 +113,5 @@ exports.getNewListings = getNewListings;
 exports.getAllCryptos = getAllCryptos;
 exports.startFollowing = startFollowing;
 exports.stopFollowing = stopFollowing;
-exports.calculateValues = calculateValues;
+exports.getShouldSell = getShouldSell;
 exports.addNewPurchase = addNewPurchase;

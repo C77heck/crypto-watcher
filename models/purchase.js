@@ -14,5 +14,9 @@ purchasedSchema.statics.findByName = function (name) {
     return this.where({name: new RegExp(name, 'i')});
 }
 
+purchasedSchema.statics.getAll = function () {
+    return this.find();
+}
+
 purchasedSchema.plugin(uniqueValidator)
-module.exports = mongoose.model('Purchased', purchasedSchema);
+module.exports = mongoose.model('Purchase', purchasedSchema);
