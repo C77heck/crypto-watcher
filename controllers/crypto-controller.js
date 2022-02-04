@@ -14,7 +14,8 @@ const getLatestListings = async (req, res, next) => {
         const assets = (listings?.data || []).map(crypto => ({
             name: crypto.name,
             symbol: crypto.symbol,
-            id: crypto.id
+            id: crypto.id,
+            price: crypto?.quote?.HUF?.price || 0,
         }));
         await set('crypto-for-select', json(assets));
     }
@@ -28,7 +29,6 @@ const getAssets = async (req, res, next) => {
 
         res.json({assets: !!assets ? json(assets) : []});
     } catch (e) {
-        console.log(e);
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
 
