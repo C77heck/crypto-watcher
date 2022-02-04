@@ -96,15 +96,28 @@ const getShouldSell = async (req, res, next) => {
             const foundItems = (await Price.getLast(item.name) || [])[0] || {};
             const diff = foundItems.price - item.price;
             const thresholds = {
-                first: FIRST > diff,
-                second: SECOND > diff,
-                third: THIRD > diff,
+                first: getThreshold(FIRST, diff, 'first'),
+                second: getThreshold(SECOND, diff, 'second'),
+                third: getThreshold(THIRD, diff, 'third'),
             }
             data.push({diff, ...thresholds, ...item?._doc || {}});
         }
     }
 
     res.json({data})
+}
+
+const getThreshold = (threshold, diff, level) => {
+    const isThresholdHit = threshold > diff;
+    if (isThresholdHit) {
+        sendNotification(level);
+    }
+
+    return isThresholdHit;
+}
+
+const sendNotification = () => {
+    console.log('notification sent!');
 }
 
 exports.getLatestListings = getLatestListings;
