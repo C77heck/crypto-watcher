@@ -70,9 +70,15 @@ const getAllCryptos = async (req, res, next) => {
 }
 
 const calculateValues = async (req, res, next) => {
-    const full_list = await allCryptos();
+    const foundItems = await Price.findByName(req.query.name || '');
+    if (!!foundItems && !!foundItems.length) {
+        // need the price we bought it for for comparison
+        for (const item of foundItems) {
 
-    res.json({full_list})
+        }
+    }
+
+    res.json({foundItems})
 }
 
 exports.getLatestListings = getLatestListings;

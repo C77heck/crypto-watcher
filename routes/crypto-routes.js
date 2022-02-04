@@ -6,17 +6,20 @@ const {
     getNewListings,
     getAllCryptos,
     startFollowing,
-    stopFollowing
+    stopFollowing,
+    calculateValues,
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
 router.use(checkAuth);
 
-router.get('/latest', getLatestListings)
+router.get('/latest_listings', getLatestListings)
 
 router.get('/new_cryptos', getNewListings);
 
 router.get('/all_cryptos', getAllCryptos);
+
+router.get('/calculate_values', calculateValues);
 
 router.post('/start-following', [check('cryptos').isArray()], startFollowing);
 
