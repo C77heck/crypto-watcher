@@ -57,6 +57,21 @@ const stopFollowing = async (req, res, next) => {
     }
 }
 
+const addNewPurchase = async (req, res, next) => {
+    try {
+        const {name, symbol, price} = listing;
+        const createdPurchase = new Purchased({
+            name, symbol, price, date,
+            date: new Date(),
+        });
+
+        await createdPurchase.save();
+    } catch (e) {
+        console.log(e);
+    }
+    res.json({message: 'Success'})
+}
+
 const getNewListings = async (req, res, next) => {
     const newCryptos = await newListings();
     // TODO -> See what could we use this for.
@@ -87,3 +102,4 @@ exports.getAllCryptos = getAllCryptos;
 exports.startFollowing = startFollowing;
 exports.stopFollowing = stopFollowing;
 exports.calculateValues = calculateValues;
+exports.addNewPurchase = addNewPurchase;
