@@ -9,7 +9,6 @@ const getLatestListings = async (req, res, next) => {
     if (!!listings.status && !listings.status.error_code) {
         await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
     }
-    // TODO -> launch a job that calculates value matrices in order to be analyzable.
 
     res.json({listings})
 }
@@ -70,8 +69,15 @@ const getAllCryptos = async (req, res, next) => {
     res.json({full_list})
 }
 
+const calculateValues = async (req, res, next) => {
+    const full_list = await allCryptos();
+
+    res.json({full_list})
+}
+
 exports.getLatestListings = getLatestListings;
 exports.getNewListings = getNewListings;
 exports.getAllCryptos = getAllCryptos;
 exports.startFollowing = startFollowing;
 exports.stopFollowing = stopFollowing;
+exports.calculateValues = calculateValues;

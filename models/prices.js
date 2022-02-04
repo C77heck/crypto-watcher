@@ -3,11 +3,17 @@ const uniqueValidator = require('mongoose-unique-validator');
 
 const Schema = mongoose.Schema;
 
-module.exports = mongoose.model('Price', new Schema({
+const priceSchema = new Schema({
     identifier: {type: Number, required: true},
     name: {type: String, required: true},
     price: {type: Number, required: true},
     symbol: {type: String, required: true},
     date: {type: Date, required: true},
     percentChangeLastHour: {type: Number, required: true},
-}).plugin(uniqueValidator));
+});
+priceSchema.statics.findByName = function (name) {
+    return this.where({name: new RegExp(name, 'i')});
+}
+
+priceSchema.plugin(uniqueValidator)
+module.exports = mongoose.model('Price', priceSchema);
