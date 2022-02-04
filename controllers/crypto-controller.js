@@ -103,23 +103,42 @@ const setThreshold = async (req, res, next) => {
 
     if (!thresholds) {
         try {
-            const createdThreshold = new Threshold({first, second, third});
+            const createdThreshold = new Threshold({
+                first: {
+                    flat: first.flat,
+                    percentage: first.percentage,
+                },
+                second: {
+                    flat: second.flat,
+                    percentage: second.percentage,
+                },
+                third: {
+                    flat: third.flat,
+                    percentage: third.percentage,
+                }
+            });
+
             await createdThreshold.save();
 
             res.json({thresholds: createdThreshold})
         } catch (e) {
+            // console.log(e);
             return next(new HttpError('Sorry, something went wrong.', 500));
         }
     } else {
         try {
-            thresholds.first = first;
-            thresholds.second = second;
-            thresholds.third = third;
+            thresholds.first = {flat: first.flat, percentage: first.percentage};
+            thresholds.first = {flat: first.flat, percentage: first.percentage};
+            thresholds.second = {flat: second.flat, percentage: second.percentage};
+            thresholds.second = {flat: second.flat, percentage: second.percentage};
+            thresholds.third = {flat: third.flat, percentage: third.percentage};
+            thresholds.third = {flat: third.flat, percentage: third.percentage};
 
             await thresholds.save();
 
             res.json({thresholds})
         } catch (e) {
+            console.log(e);
             return next(new HttpError('Sorry, something went wrong.', 500));
         }
     }
@@ -129,9 +148,9 @@ const getThresholds = async () => {
     const thresholds = await Threshold.get();
 
     return {
-        first: thresholds?.first || 0,
-        second: thresholds?.second || 0,
-        third: thresholds?.third || 0,
+        first: thresholds?.first || {},
+        second: thresholds?.second || {},
+        third: thresholds?.third || {},
     }
 }
 

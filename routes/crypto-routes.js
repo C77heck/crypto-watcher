@@ -30,9 +30,9 @@ router.post('/add_new_purchase', [
 ], addNewPurchase);
 
 router.post('/set_thresholds', [
-    check('first').not().isEmpty().escape().trim().isNumeric(),
-    check('second').not().isEmpty().escape().trim().isNumeric(),
-    check('third').not().isEmpty().escape().trim().isNumeric()
+    check('first').not().isEmpty(),
+    check('second').not().isEmpty(),
+    check('third').not().isEmpty()
 ], setThreshold);
 
 router.post('/start-following', [check('cryptos').isArray()], startFollowing);
