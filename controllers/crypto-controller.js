@@ -143,13 +143,23 @@ const getShouldSell = async (req, res, next) => {
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
         for (const item of purchasedCryptos) {
             const foundItems = (await Price.getLast(item.name) || [])[0] || {};
-            const diff = foundItems.price - item.price;
+            const flatDiff = foundItems.price - item.price;
+            const percentageDiff = foundItems.price - item.price; // figure how to calculate this.
             const thresholds = {
-                first: getThreshold(first > diff, 'first', item.name),
-                second: getThreshold(second > diff, 'second', item.name),
-                third: getThreshold(third > diff, 'third', item.name),
+                first: {
+                    flat: getThreshold(first.flat > flatDiff, 'first flat', item.name),
+                    percentage: getThreshold(first.percentage > percentageDiff, 'first percentage', item.name),
+                },
+                second: {
+                    flat: getThreshold(second.flat > flatDiff, 'second flat', item.name),
+                    percentage: getThreshold(second.percentage > percentageDiff, 'second percentage', item.name),
+                },
+                third: {
+                    flat: getThreshold(third.flat > flatDiff, 'third flat', item.name),
+                    percentage: getThreshold(third.percentage > percentageDiff, 'third percentage', item.name),
+                },
             }
-            data.push({diff, ...thresholds, ...item?._doc || {}});
+            data.push({flatDiff, percentageDiff, ...thresholds, ...item?._doc || {}});
         }
     }
 
@@ -165,7 +175,7 @@ const getThreshold = (isThresholdHit, level, cryptoName) => {
 }
 
 const sendNotification = (level, cryptoName) => {
-    terminal(`osascript -e 'display alert "SELLING ADVISE" message "${cryptoName} has reached ${level} level of threshold for a sell"'`);
+    terminal(`osascript -e 'display alert "SELLING ADVISE" message "${cryptoName} has reached ${level} level of threshold. consider selling"'`);
 }
 
 exports.getLatestListings = getLatestListings;
