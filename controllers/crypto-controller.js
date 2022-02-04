@@ -1,10 +1,10 @@
 const HttpError = require('../models/http-error');
 const Price = require('../models/prices');
 const Purchase = require('../models/purchase');
+const Threshold = require('../models/threshold');
 const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set} = require('../libs/redis-client');
 const {json, removeDuplicates} = require('../libs/helpers');
-const {CONSTANTS} = require("../libs/constants");
 const {terminal} = require("../libs/terminal-helper");
 
 const getLatestListings = async (req, res, next) => {
@@ -99,18 +99,57 @@ const getAllCryptos = async (req, res, next) => {
     res.json({full_list})
 }
 
+const setThreshold = async (req, res, next) => {
+    const {first, second, third} = req.body;
+    const thresholds = await Threshold.get();
+
+    if (!thresholds) {
+        try {
+            const createdThreshold = new Threshold({first, second, third});
+            await createdThreshold.save();
+
+            res.json({thresholds: createdThreshold})
+        } catch (e) {
+            return next(new HttpError('Sorry, something went wrong.', 500));
+        }
+    } else {
+        try {
+            thresholds.first = first;
+            thresholds.second = second;
+            thresholds.third = third;
+
+            await thresholds.save();
+
+            res.json({thresholds})
+        } catch (e) {
+            return next(new HttpError('Sorry, something went wrong.', 500));
+        }
+    }
+}
+
+const getThresholds = async () => {
+    const thresholds = await Threshold.get();
+
+    return {
+        first: thresholds?.first || 0,
+        second: thresholds?.second || 0,
+        third: thresholds?.third || 0,
+    }
+}
+
 const getShouldSell = async (req, res, next) => {
-    const {FIRST, SECOND, THIRD} = CONSTANTS.THRESHOLDS;
+    const {first, second, third} = await getThresholds();
     const purchasedCryptos = await Purchase.getAll();
     const data = [];
+
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
         for (const item of purchasedCryptos) {
             const foundItems = (await Price.getLast(item.name) || [])[0] || {};
             const diff = foundItems.price - item.price;
             const thresholds = {
-                first: getThreshold(FIRST, diff, 'first', item.name),
-                second: getThreshold(SECOND, diff, 'second', item.name),
-                third: getThreshold(THIRD, diff, 'third', item.name),
+                first: getThreshold(first, diff, 'first', item.name),
+                second: getThreshold(second, diff, 'second', item.name),
+                third: getThreshold(third, diff, 'third', item.name),
             }
             data.push({diff, ...thresholds, ...item?._doc || {}});
         }
@@ -141,3 +180,4 @@ exports.startFollowing = startFollowing;
 exports.stopFollowing = stopFollowing;
 exports.getShouldSell = getShouldSell;
 exports.addNewPurchase = addNewPurchase;
+exports.setThreshold = setThreshold;
