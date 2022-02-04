@@ -5,6 +5,7 @@ const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set} = require('../libs/redis-client');
 const {json, removeDuplicates} = require('../libs/helpers');
 const {CONSTANTS} = require("../libs/constants");
+const {terminal} = require("../libs/terminal-helper");
 
 const getLatestListings = async (req, res, next) => {
     const listings = await latestListings();
@@ -60,8 +61,9 @@ const stopFollowing = async (req, res, next) => {
 }
 
 const addNewPurchase = async (req, res, next) => {
+    const {name, symbol, price} = req.body;
+
     try {
-        const {name, symbol, price} = req.body;
         const createdPurchase = new Purchase({
             name, symbol, price,
             date: new Date(),
@@ -71,7 +73,17 @@ const addNewPurchase = async (req, res, next) => {
     } catch (e) {
         console.log(e);
     }
-    // will have to follow it too.
+
+    try {
+        const followedCryptos = json(await get('cryptos-to-follow'), []);
+        const combined = removeDuplicates([...(followedCryptos || []), name]);
+        await set('cryptos-to-follow', json(combined));
+
+        res.json({combined, followedCryptos})
+    } catch (e) {
+        return next(new HttpError('Sorry, something went wrong.', 500));
+    }
+
     res.json({message: 'Success'})
 }
 
@@ -96,9 +108,9 @@ const getShouldSell = async (req, res, next) => {
             const foundItems = (await Price.getLast(item.name) || [])[0] || {};
             const diff = foundItems.price - item.price;
             const thresholds = {
-                first: getThreshold(FIRST, diff, 'first'),
-                second: getThreshold(SECOND, diff, 'second'),
-                third: getThreshold(THIRD, diff, 'third'),
+                first: getThreshold(FIRST, diff, 'first', item.name),
+                second: getThreshold(SECOND, diff, 'second', item.name),
+                third: getThreshold(THIRD, diff, 'third', item.name),
             }
             data.push({diff, ...thresholds, ...item?._doc || {}});
         }
@@ -107,17 +119,19 @@ const getShouldSell = async (req, res, next) => {
     res.json({data})
 }
 
-const getThreshold = (threshold, diff, level) => {
+const getThreshold = (threshold, diff, level, cryptoName) => {
     const isThresholdHit = threshold > diff;
+    sendNotification(level, cryptoName);
+
     if (isThresholdHit) {
-        sendNotification(level);
+        sendNotification(level, cryptoName);
     }
 
     return isThresholdHit;
 }
 
-const sendNotification = () => {
-    console.log('notification sent!');
+const sendNotification = (level, cryptoName) => {
+    terminal(`osascript -e 'display alert "SELLING ADVISE" message "${cryptoName} has reached ${level} level of threshold for a sell"'`);
 }
 
 exports.getLatestListings = getLatestListings;
