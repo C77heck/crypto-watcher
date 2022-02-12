@@ -1,5 +1,5 @@
 const express = require('express');
-const {check} = require('express-validator')
+const { check } = require('express-validator')
 const router = express.Router();
 const {
     getLatestListings,
@@ -13,7 +13,7 @@ const {
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
-router.use(checkAuth);
+// router.use(checkAuth);
 
 router.get('/latest_listings', getLatestListings);
 

@@ -102,7 +102,7 @@ const addNewPurchase = async (req, res, next) => {
 const getNewListings = async (req, res, next) => {
     const newCryptos = await newListings();
     // TODO -> See what could we use this for.
-
+    console.log();
     res.json({newCryptos})
 }
 const getAllCryptos = async (req, res, next) => {
