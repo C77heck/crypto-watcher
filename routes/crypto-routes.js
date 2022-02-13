@@ -29,6 +29,7 @@ router.post('/add_new_purchase', [
     check('name').not().isEmpty().escape().trim(),
     check('symbol').not().isEmpty().escape().trim(),
     check('price').not().isEmpty().escape().trim().isNumeric(),
+    check('amount').not().isEmpty().escape().trim().isNumeric(),
     check('thresholds').not().isEmpty(),
 ], addNewPurchase);
 
