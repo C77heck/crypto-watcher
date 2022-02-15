@@ -3,15 +3,10 @@ const uniqueValidator = require('mongoose-unique-validator');
 
 const Schema = mongoose.Schema;
 
-const thresholdTypeSchema = new Schema({
-    flat: {type: Number, required: true},
-    percentage: {type: Number, required: true},
-});
-
 const thresholdSchema = new Schema({
-    first: thresholdTypeSchema,
-    second: thresholdTypeSchema,
-    third: thresholdTypeSchema,
+    first: {type: Number, required: true},
+    second: {type: Number, required: true},
+    third: {type: Number, required: true},
 });
 
 const purchasedSchema = new Schema({
