@@ -124,15 +124,15 @@ const getShouldSell = async (req, res, next) => {
             // TODO -> we need to adjust this to be a percentage based threshold calculation.
             const thresholds = {
                 first: {
-                    flat: getThreshold(first.flat > flatDiff, 'first flat', item.name),
+                    flat: getThreshold(first?.flat || 0 > flatDiff, 'first flat', item.name),
                     percentage: getThreshold(100 > percentageDiff, 'first percentage', item.name),
                 },
                 second: {
-                    flat: getThreshold(second.flat > flatDiff, 'second flat', item.name),
+                    flat: getThreshold(second?.flat || 0 > flatDiff, 'second flat', item.name),
                     percentage: getThreshold(100 > percentageDiff, 'second percentage', item.name),
                 },
                 third: {
-                    flat: getThreshold(third.flat > flatDiff, 'third flat', item.name),
+                    flat: getThreshold(third?.flat || 0 > flatDiff, 'third flat', item.name),
                     percentage: getThreshold(100 > percentageDiff, 'third percentage', item.name),
                 },
             }
@@ -140,7 +140,7 @@ const getShouldSell = async (req, res, next) => {
         }
     }
 
-    res.json({ data })
+    res.json({ items: data })
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {
