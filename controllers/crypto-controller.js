@@ -1,11 +1,11 @@
 const HttpError = require('../models/http-error');
 const Price = require('../models/prices');
 const Purchase = require('../models/purchase');
-const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
-const {get, set} = require('../libs/redis-client');
-const {json, removeDuplicates} = require('../libs/helpers');
-const {terminal} = require("../libs/terminal-helper");
-const {CONSTANTS: {CRYPTOS_TO_FOLLOW, CRYPTOS_FOR_SELECT, CURRENCY}} = require('../libs/constants');
+const { latestListings, newListings, allCryptos } = require("../libs/api-helper");
+const { get, set } = require('../libs/redis-client');
+const { json, removeDuplicates } = require('../libs/helpers');
+const { terminal } = require("../libs/terminal-helper");
+const { CONSTANTS: { CRYPTOS_TO_FOLLOW, CRYPTOS_FOR_SELECT, CURRENCY } } = require('../libs/constants');
 
 const getLatestListings = async (req, res, next) => {
     const listings = await latestListings();
@@ -21,14 +21,14 @@ const getLatestListings = async (req, res, next) => {
         await set(CRYPTOS_FOR_SELECT, json(assets));
     }
 
-    res.json({listings})
+    res.json({ listings })
 }
 
 const getAssets = async (req, res, next) => {
     try {
         const assets = await get(CRYPTOS_FOR_SELECT);
 
-        res.json({assets: !!assets ? json(assets) : []});
+        res.json({ assets: !!assets ? json(assets) : [] });
     } catch (e) {
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
@@ -38,7 +38,7 @@ const getAssets = async (req, res, next) => {
 const savePrices = async (listings, date) => {
     for (const listing of listings) {
         try {
-            const {id, name, symbol, quote: {HUF: {price, percent_change_1h}},} = listing;
+            const { id, name, symbol, quote: { HUF: { price, percent_change_1h } }, } = listing;
             const createdPrice = new Price({
                 name, symbol, price, date,
                 identifier: id,
@@ -55,12 +55,12 @@ const savePrices = async (listings, date) => {
 
 const startFollowing = async (req, res, next) => {
     try {
-        const {cryptos} = req.body;
+        const { cryptos } = req.body;
         const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
         const combined = removeDuplicates([...(followedCryptos || []), ...cryptos]);
         await set(CRYPTOS_TO_FOLLOW, json(combined));
 
-        res.json({combined, followedCryptos})
+        res.json({ combined, followedCryptos })
     } catch (e) {
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
@@ -68,23 +68,24 @@ const startFollowing = async (req, res, next) => {
 
 const stopFollowing = async (req, res, next) => {
     try {
-        const {cryptos} = req.body;
+        const { cryptos } = req.body;
         const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
         const filtered = (followedCryptos || []).filter(item => !cryptos.includes(item))
         await set(CRYPTOS_TO_FOLLOW, json(filtered));
 
-        res.json({filtered})
+        res.json({ filtered })
     } catch (e) {
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
 }
 
 const addNewPurchase = async (req, res, next) => {
-    const {name, symbol, price, thresholds} = req.body;
+    const { name, symbol, price, thresholds } = req.body;
     try {
-        const createdPurchase = new Purchase({name, symbol, price, thresholds, date: new Date()});
+        const createdPurchase = new Purchase({ name, symbol, price, thresholds, date: new Date() });
         await createdPurchase.save();
     } catch (e) {
+        console.log(e);
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
 
@@ -96,18 +97,18 @@ const addNewPurchase = async (req, res, next) => {
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
 
-    res.json({message: 'Success'})
+    res.json({ message: 'Success' })
 }
 
 const getNewListings = async (req, res, next) => {
     const newCryptos = await newListings();
     // TODO -> See what could we use this for.
     console.log();
-    res.json({newCryptos})
+    res.json({ newCryptos })
 }
 const getAllCryptos = async (req, res, next) => {
     const full_list = await allCryptos();
-    res.json({full_list})
+    res.json({ full_list })
 }
 
 const getShouldSell = async (req, res, next) => {
@@ -117,9 +118,10 @@ const getShouldSell = async (req, res, next) => {
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
         for (const item of purchasedCryptos) {
             const foundItems = (await Price.getLast(item.name) || [])[0] || {};
-            const {first, second, third} = item.thresholds;
+            const { first, second, third } = item.thresholds;
             const flatDiff = foundItems.price - item.price;
             const percentageDiff = (foundItems.price / item.price) * 100; // figure how to calculate this.
+            // TODO -> we need to adjust this to be a percentage based threshold calculation.
             const thresholds = {
                 first: {
                     flat: getThreshold(first.flat > flatDiff, 'first flat', item.name),
@@ -134,11 +136,11 @@ const getShouldSell = async (req, res, next) => {
                     percentage: getThreshold(100 > percentageDiff, 'third percentage', item.name),
                 },
             }
-            data.push({flatDiff, percentageDiff, ...thresholds, ...item?._doc || {}});
+            data.push({ flatDiff, percentageDiff, ...thresholds, ...item?._doc || {} });
         }
     }
 
-    res.json({data})
+    res.json({ data })
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {
