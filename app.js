@@ -8,6 +8,19 @@ const adminRouter = require('./routes/admin-routes');
 const cryptoRouter = require('./routes/crypto-routes');
 const app = express();
 
+const errorHandler = (err, req, res, next) => {
+    console.log('WWWWWWWWW');
+
+    res.status(500).send({ error: err });
+}
+
+app.use(function (err, req, res, next) {
+    console.log('what the actual fuck');
+    res.setHeader('Content-Type', 'application/json');
+    res.status(500);
+    res.send(JSON.stringify(error));
+});
+
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -16,7 +29,7 @@ app.use((req, res, next) => {
 })
 
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -26,6 +39,15 @@ app.use('/api/crypto', cryptoRouter);
 
 app.use(() => {
     throw new HttpError('Could not find this route.', 404);
+});
+
+app.use((error, req, res, next) => {
+    if (res.headerSent) {
+        return next(error);
+    }
+
+    res.status(error.code || 500);
+    res.json({ message: error.message || 'An unknown error occurred!' });
 });
 
 (async () => {

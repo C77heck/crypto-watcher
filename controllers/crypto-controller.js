@@ -6,8 +6,11 @@ const { get, set } = require('../libs/redis-client');
 const { json, removeDuplicates } = require('../libs/helpers');
 const { terminal } = require("../libs/terminal-helper");
 const { CONSTANTS: { CRYPTOS_TO_FOLLOW, CRYPTOS_FOR_SELECT, CURRENCY, TRANSACTION_FEE } } = require('../libs/constants');
+const { handleError } = require("../libs/error-handler");
 
 const getLatestListings = async (req, res, next) => {
+    handleError(req, next);
+
     const listings = await latestListings();
 
     if (!!listings.status && !listings.status.error_code) {
@@ -25,6 +28,8 @@ const getLatestListings = async (req, res, next) => {
 }
 
 const getAssets = async (req, res, next) => {
+    handleError(req, next);
+
     try {
         const assets = await get(CRYPTOS_FOR_SELECT);
 
@@ -36,6 +41,8 @@ const getAssets = async (req, res, next) => {
 }
 
 const savePrices = async (listings, date) => {
+    handleError(req, next);
+
     for (const listing of listings) {
         try {
             const { id, name, symbol, quote: { HUF: { price, percent_change_1h } }, } = listing;
@@ -54,6 +61,8 @@ const savePrices = async (listings, date) => {
 }
 
 const startFollowing = async (req, res, next) => {
+    handleError(req, next);
+
     try {
         const { cryptos } = req.body;
         const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
@@ -67,6 +76,8 @@ const startFollowing = async (req, res, next) => {
 }
 
 const stopFollowing = async (req, res, next) => {
+    handleError(req, next);
+
     try {
         const { cryptos } = req.body;
         const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
@@ -80,6 +91,8 @@ const stopFollowing = async (req, res, next) => {
 }
 
 const addNewPurchase = async (req, res, next) => {
+    handleError(req, next);
+
     const { name, symbol, price, amount, thresholds } = req.body;
     try {
         console.log({ name, symbol, price, thresholds });
@@ -102,17 +115,23 @@ const addNewPurchase = async (req, res, next) => {
 }
 
 const getNewListings = async (req, res, next) => {
+    handleError(req, next);
+
     const newCryptos = await newListings();
     // TODO -> See what could we use this for.
     console.log();
     res.json({ newCryptos })
 }
 const getAllCryptos = async (req, res, next) => {
+    handleError(req, next);
+
     const full_list = await allCryptos();
     res.json({ full_list })
 }
 
 const getShouldSell = async (req, res, next) => {
+    handleError(req, next);
+
     const purchasedCryptos = await Purchase.getAll();
     const data = [];
 
