@@ -91,12 +91,12 @@ const stopFollowing = async (req, res, next) => {
 const addNewPurchase = async (req, res, next) => {
     handleError(req, next);
 
-    const { name, symbol, price, amount, thresholds } = req.body;
+    const { name, symbol, price, amount, thresholds, identifier } = req.body;
     try {
-        const createdPurchase = new Purchase({ name, symbol, price, amount, thresholds, date: new Date() });
+        const createdPurchase = new Purchase({ identifier, name, symbol, price, amount, thresholds, date: new Date() });
         await createdPurchase.save();
     } catch (e) {
-        return next(new HttpError('Sorry, something went wrong.', 500));
+        return next(new HttpError(`'Sorry, something went wrong.'${e}`, 500));
     }
 
     try {
@@ -104,7 +104,7 @@ const addNewPurchase = async (req, res, next) => {
         const combined = removeDuplicates([...(followedCryptos || []), name]);
         await set(CRYPTOS_TO_FOLLOW, json(combined));
     } catch (e) {
-        return next(new HttpError('Sorry, something went wrong.', 500));
+        return next(new HttpError(`'Sorry, something went wrong.'${e}`, 500));
     }
 
     res.json({ message: 'New purchase has been successfully added to the watchlist' })
@@ -149,13 +149,12 @@ const getPurcasedPrices = async (req, res, next) => {
 
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
         for (const item of purchasedCryptos) {
-            const foundItems = (await Price.getByIdentifier(item.identifier) || [])[0] || {};
+            const foundItems = await Price.getByIdentifier(item.identifier);
+            console.log(foundItems.identifier);
             const { first, second, third } = item.thresholds;
+            console.log(item);
             const currentPrice = foundItems.price * item.amount;
             const percentageDiff = ((currentPrice * TRANSACTION_FEE) / (item.price * TRANSACTION_FEE)) * 100;
-            getThreshold(first > percentageDiff, 'first', item.name);
-            getThreshold(second > percentageDiff, 'second', item.name);
-            getThreshold(third > percentageDiff, 'third', item.name);
 
             data.push({
                 percentageDiff, ...item?._doc || {}, first, second, third, currentPrice,
@@ -180,6 +179,9 @@ const getShouldSell = async (req, res, next) => {
             const { first, second, third } = item.thresholds;
             const currentPrice = foundItems.price * item.amount;
             const percentageDiff = ((currentPrice * TRANSACTION_FEE) / (item.price * TRANSACTION_FEE)) * 100;
+            getThreshold(first > percentageDiff, 'first', item.name);
+            getThreshold(second > percentageDiff, 'second', item.name);
+            getThreshold(third > percentageDiff, 'third', item.name);
 
             data.push({
                 percentageDiff, ...item?._doc || {}, first, second, third, currentPrice,

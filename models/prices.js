@@ -20,7 +20,7 @@ priceSchema.statics.getLast = function (name) {
 }
 
 priceSchema.statics.getByIdentifier = function (identifier) {
-    return this.where({ identifier }).sort({ _id: -1 }).limit(1);
+    return this.findOne({ identifier })
 }
 
 
