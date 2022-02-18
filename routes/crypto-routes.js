@@ -1,5 +1,5 @@
 const express = require('express');
-const { check } = require('express-validator')
+const {check} = require('express-validator')
 const router = express.Router();
 const {
     getLatestListings,
@@ -10,10 +10,11 @@ const {
     getShouldSell,
     addNewPurchase,
     getAssets,
+    deletePurchase,
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
-// router.use(checkAuth);
+router.use(checkAuth);
 
 router.get('/latest_listings', getLatestListings);
 
@@ -33,8 +34,9 @@ router.post('/add_new_purchase', [
     check('thresholds').not().isEmpty(),
 ], addNewPurchase);
 
-router.post('/start-following', [check('cryptos').isArray()], startFollowing);
+router.post('/start_following', [check('cryptos').isArray()], startFollowing);
 
-router.delete('/stop-following', [check('cryptos').isArray()], stopFollowing);
+router.delete('/stop_following', [check('cryptos').isArray()], stopFollowing);
+router.delete('/delete_purchase/:id',[], deletePurchase);
 
 module.exports = router;
