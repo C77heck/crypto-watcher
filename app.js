@@ -45,9 +45,11 @@ app.use((error, req, res, next) => {
     if (res.headerSent) {
         return next(error);
     }
+    const statusCode = error.code || 500;
 
-    res.status(error.code || 500);
-    res.json({ message: error.message || 'An unknown error occurred!' });
+    res
+        .status(statusCode)
+        .json({ statusCode, message: error.message || 'An unknown error occurred!' });
 });
 
 (async () => {

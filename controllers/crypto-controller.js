@@ -41,8 +41,6 @@ const getAssets = async (req, res, next) => {
 }
 
 const savePrices = async (listings, date) => {
-    handleError(req, next);
-
     for (const listing of listings) {
         try {
             const { id, name, symbol, quote: { HUF: { price, percent_change_1h } }, } = listing;
@@ -137,10 +135,9 @@ const getShouldSell = async (req, res, next) => {
 
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
         for (const item of purchasedCryptos) {
-            const foundItems = (await Price.getLast(item.name) || [])[0] || {};
+            const foundItems = (await Price.getByIdentifier(item.identifier) || [])[0] || {};
             const { first, second, third } = item.thresholds;
-
-            console.log(item);
+            console.log(foundItems, item.name);
             const currentPrice = foundItems.price * item.amount;
             const percentageDiff = ((currentPrice * TRANSACTION_FEE) / (item.price * TRANSACTION_FEE)) * 100;
             getThreshold(first > percentageDiff, 'first', item.name);
