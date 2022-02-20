@@ -124,7 +124,7 @@ const signup = async (req, res, next) => {
         ))
     }
 
-    res.status(201).json({ userData: { userId: createdUser.id, token: token } })
+    res.status(201).json({ userData: { userId: createdAdmin.id, token: token } })
 }
 
 exports.login = login;
