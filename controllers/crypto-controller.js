@@ -150,16 +150,14 @@ const getPurcasedPrices = async (req, res, next) => {
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
         for (const item of purchasedCryptos) {
             const foundItems = await Price.getByIdentifier(item.identifier);
-            console.log(foundItems.identifier);
             const { first, second, third } = item.thresholds;
-            console.log(item);
             const currentPrice = foundItems.price * item.amount;
             const percentageDiff = ((currentPrice * TRANSACTION_FEE) / (item.price * TRANSACTION_FEE)) * 100;
 
             data.push({
                 percentageDiff, ...item?._doc || {}, first, second, third, currentPrice,
                 priceBoughtFor: item.price,
-                potentialProfit: (currentPrice * TRANSACTION_FEE) - (item.price * TRANSACTION_FEE),
+                potentialProfit: (currentPrice * TRANSACTION_FEE) - (item.price),
             });
         }
     }
