@@ -38,7 +38,7 @@ router.post('/add_new_purchase', [
     check('thresholds').not().isEmpty(),
 ], addNewPurchase);
 
-router.patch('/update_purchase', [
+router.patch('/update_purchase/:id', [
     check('name').not().isEmpty().escape().trim(),
     check('symbol').not().isEmpty().escape().trim(),
     check('price').not().isEmpty().escape().trim().isNumeric(),

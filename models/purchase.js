@@ -4,23 +4,23 @@ const uniqueValidator = require('mongoose-unique-validator');
 const Schema = mongoose.Schema;
 
 const thresholdSchema = new Schema({
-    first: { type: Number, required: true },
-    second: { type: Number, required: true },
-    third: { type: Number, required: true },
+    first: {type: Number, required: true},
+    second: {type: Number, required: true},
+    third: {type: Number, required: true},
 });
 
 const purchasedSchema = new Schema({
-    name: { type: String, required: true },
-    price: { type: Number, required: true },
-    identifier: { type: Number, required: true },
-    amount: { type: Number, required: true },
-    symbol: { type: String, required: true },
-    date: { type: Date, required: true },
+    name: {type: String, required: true},
+    price: {type: Number, required: true},
+    identifier: {type: Number, required: true},
+    amount: {type: Number, required: true},
+    symbol: {type: String, required: true},
+    date: {type: Date, required: true},
     thresholds: thresholdSchema,
 });
 
 purchasedSchema.statics.findByName = function (name) {
-    return this.where({ name: new RegExp(name, 'i') });
+    return this.where({name: new RegExp(name, 'i')});
 }
 
 purchasedSchema.statics.getAll = function () {
@@ -28,11 +28,13 @@ purchasedSchema.statics.getAll = function () {
 }
 
 purchasedSchema.statics.deleteById = function (id) {
-    return this.deleteOne({ _id: id });
+    return this.deleteOne({_id: id});
 }
 
 purchasedSchema.statics.updateDocument = function (id, data) {
-    return this.updateOne({ _id: id }, { ...data });
+    console.log(this.findOne({_id: id}).first);
+    console.log({...data});
+    return this.updateOne({_id: id}, {...data});
 }
 
 
