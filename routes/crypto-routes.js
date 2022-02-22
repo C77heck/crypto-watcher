@@ -1,5 +1,5 @@
 const express = require('express');
-const { check } = require('express-validator')
+const {check} = require('express-validator')
 const router = express.Router();
 const {
     getLatestListings,
@@ -9,6 +9,7 @@ const {
     stopFollowing,
     getShouldSell,
     addNewPurchase,
+    updatePurchase,
     getAssets,
     deletePurchase,
     getPurcasedPrices,
@@ -37,13 +38,13 @@ router.post('/add_new_purchase', [
     check('thresholds').not().isEmpty(),
 ], addNewPurchase);
 
-router.put('/update_purchase', [
+router.patch('/update_purchase', [
     check('name').not().isEmpty().escape().trim(),
     check('symbol').not().isEmpty().escape().trim(),
     check('price').not().isEmpty().escape().trim().isNumeric(),
     check('amount').not().isEmpty().escape().trim().isNumeric(),
     check('thresholds').not().isEmpty(),
-], addNewPurchase);
+], updatePurchase);
 
 router.post('/start_following', [check('cryptos').isArray()], startFollowing);
 

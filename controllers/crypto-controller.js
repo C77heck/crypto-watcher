@@ -111,17 +111,17 @@ const addNewPurchase = async (req, res, next) => {
 
 const updatPurchase = async (req, res, next) => {
     handleError(req, next);
-
-    const { name, symbol, price, amount, thresholds, identifier, _id } = req.body;
     console.log(req.body);
+
+    const {name, symbol, price, amount, thresholds, identifier, _id} = req.body;
     try {
-        const purchase = await Purchase.updaupdateDocument(_id, { name, symbol, price, amount, thresholds, identifier });
+        const purchase = await Purchase.updateDocument(_id, {name, symbol, price, amount, thresholds, identifier});
         console.log(purchase);
     } catch (e) {
         return next(new HttpError(`'Sorry, something went wrong.'${e}`, 500));
     }
 
-    res.json({ message: 'New purchase has been successfully updated' })
+    res.json({message: 'New purchase has been successfully updated'})
 }
 
 const deletePurchase = async (req, res, next) => {

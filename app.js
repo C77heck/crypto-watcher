@@ -8,12 +8,6 @@ const adminRouter = require('./routes/admin-routes');
 const cryptoRouter = require('./routes/crypto-routes');
 const app = express();
 
-const errorHandler = (err, req, res, next) => {
-    console.log('WWWWWWWWW');
-
-    res.status(500).send({ error: err });
-}
-
 app.use(function (err, req, res, next) {
     console.log('what the actual fuck');
     res.setHeader('Content-Type', 'application/json');
@@ -24,12 +18,12 @@ app.use(function (err, req, res, next) {
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PATCH, PUT, DELETE');
     next();
 })
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -49,7 +43,7 @@ app.use((error, req, res, next) => {
 
     res
         .status(statusCode)
-        .json({ statusCode, message: error.message || 'An unknown error occurred!' });
+        .json({statusCode, message: error.message || 'An unknown error occurred!'});
 });
 
 (async () => {
