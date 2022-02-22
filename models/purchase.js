@@ -31,5 +31,10 @@ purchasedSchema.statics.deleteById = function (id) {
     return this.deleteOne({ _id: id });
 }
 
+purchasedSchema.statics.updateDocument = function (id, data) {
+    return this.updateOne({ _id: id }, { ...data });
+}
+
+
 purchasedSchema.plugin(uniqueValidator)
 module.exports = mongoose.model('Purchase', purchasedSchema);

@@ -110,6 +110,21 @@ const addNewPurchase = async (req, res, next) => {
     res.json({ message: 'New purchase has been successfully added to the watchlist' })
 }
 
+const updatPurchase = async (req, res, next) => {
+    handleError(req, next);
+
+    const { name, symbol, price, amount, thresholds, identifier, _id } = req.body;
+    console.log(req.body);
+    try {
+        const purchase = await Purchase.updaupdateDocument(_id, { name, symbol, price, amount, thresholds, identifier });
+        console.log(purchase);
+    } catch (e) {
+        return next(new HttpError(`'Sorry, something went wrong.'${e}`, 500));
+    }
+
+    res.json({ message: 'New purchase has been successfully updated' })
+}
+
 const deletePurchase = async (req, res, next) => {
     handleError(req, next);
 
@@ -211,6 +226,7 @@ exports.startFollowing = startFollowing;
 exports.stopFollowing = stopFollowing;
 exports.getShouldSell = getShouldSell;
 exports.addNewPurchase = addNewPurchase;
+exports.updatPurchase = updatPurchase;
 exports.getAssets = getAssets;
 exports.deletePurchase = deletePurchase;
 exports.getPurcasedPrices = getPurcasedPrices;
