@@ -121,7 +121,6 @@ const updatePurchase = async (req, res, next) => {
             thresholds,
             identifier
         });
-        console.log({purchase});
     } catch (e) {
         return next(new HttpError(`'Sorry, something went wrong.'${e}`, 500));
     }
