@@ -37,6 +37,14 @@ router.post('/add_new_purchase', [
     check('thresholds').not().isEmpty(),
 ], addNewPurchase);
 
+router.put('/update_purchase', [
+    check('name').not().isEmpty().escape().trim(),
+    check('symbol').not().isEmpty().escape().trim(),
+    check('price').not().isEmpty().escape().trim().isNumeric(),
+    check('amount').not().isEmpty().escape().trim().isNumeric(),
+    check('thresholds').not().isEmpty(),
+], addNewPurchase);
+
 router.post('/start_following', [check('cryptos').isArray()], startFollowing);
 
 router.delete('/stop_following', [check('cryptos').isArray()], stopFollowing);
