@@ -44,9 +44,9 @@ const savePrices = async (listings, date) => {
         try {
             const {id, name, symbol, quote: {HUF: {price, percent_change_1h}},} = listing;
             const createdPrice = new Price({
-                name, symbol, price, date,
+                name, symbol, price,
                 identifier: id,
-                date: new Date(),
+                created_at: date,
                 percentChangeLastHour: percent_change_1h,
             });
 
@@ -168,7 +168,7 @@ const getPurcasedPrices = async (req, res, next) => {
         for (const item of purchasedCryptos) {
             const foundItems = await Price.getByIdentifier(item.identifier);
             const {first, second, third} = item.thresholds;
-            const currentPrice = foundItems.price * item.amount;
+            const currentPrice = foundItems?.price * item.amount;
             const percentageDiff = ((currentPrice * TRANSACTION_FEE) / (item.price * TRANSACTION_FEE)) * 100;
 
             data.push({
@@ -178,7 +178,7 @@ const getPurcasedPrices = async (req, res, next) => {
             });
         }
     }
-
+    console.log(data);
     res.json({items: data})
 }
 

@@ -8,7 +8,7 @@ const priceSchema = new Schema({
     name: {type: String, required: true},
     price: {type: Number, required: true},
     symbol: {type: String, required: true},
-    date: {type: Date, required: true},
+    created_at: {type: Date, required: true},
     percentChangeLastHour: {type: Number, required: true},
 });
 priceSchema.statics.findByName = function (name) {
@@ -20,7 +20,7 @@ priceSchema.statics.getLast = function (name) {
 }
 
 priceSchema.statics.getByIdentifier = function (identifier) {
-    return this.findOne({identifier}, {}, {sort: {'date': -1}})
+    return this.findOne({identifier}, {}, {sort: {created_at: -1}})
 }
 
 
