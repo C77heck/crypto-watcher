@@ -13,6 +13,7 @@ const {
     getAssets,
     deletePurchase,
     getPurcasedPrices,
+    getValueChanges,
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
@@ -27,6 +28,8 @@ router.get('/new_cryptos', getNewListings);
 router.get('/all_cryptos', getAllCryptos);
 
 router.get('/get_purchases', getPurcasedPrices);
+
+router.get('/get_changes_in_value', getValueChanges);
 
 router.get('/should_sell', getShouldSell);
 

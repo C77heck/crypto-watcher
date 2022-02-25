@@ -1,6 +1,7 @@
 const HttpError = require('../models/http-error');
 const Price = require('../models/prices');
 const Purchase = require('../models/purchase');
+const {Fluctuation} = require("./libs/fluctuation");
 const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set} = require('../libs/redis-client');
 const {json, removeDuplicates} = require('../libs/helpers');
@@ -209,6 +210,18 @@ const getShouldSell = async (req, res, next) => {
     res.json({items: data})
 }
 
+const getValueChanges = async (req, res, next) => {
+    let data = [];
+    try {
+        const prices = await Price.getAll();
+        data = [...(prices || []).map(price => new Fluctuation(price)), ...data];
+    } catch (e) {
+        return next(new HttpError('Something went wrong', 500));
+    }
+
+    res.json({items: data})
+}
+
 const getThreshold = (isThresholdHit, level, cryptoName) => {
     if (isThresholdHit) {
         sendNotification(level, cryptoName);
@@ -232,3 +245,4 @@ exports.updatePurchase = updatePurchase;
 exports.getAssets = getAssets;
 exports.deletePurchase = deletePurchase;
 exports.getPurcasedPrices = getPurcasedPrices;
+exports.getValueChanges = getValueChanges;
