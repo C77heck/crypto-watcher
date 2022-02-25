@@ -216,7 +216,8 @@ const getValueChanges = async (req, res, next) => {
         const prices = await Price.getAll();
         data = [...(prices || []).map(price => new Fluctuation(price)), ...data];
     } catch (e) {
-        return next(new HttpError('Something went wrong', 500));
+
+        return next(new HttpError(`Something went wrong ${e}`, 500));
     }
 
     res.json({items: data})

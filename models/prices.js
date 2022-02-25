@@ -23,6 +23,9 @@ priceSchema.statics.getByIdentifier = function (identifier) {
     return this.findOne({identifier}, {}, {sort: {created_at: -1}})
 }
 
+priceSchema.statics.getAll = function () {
+    return this.find({}, {}, {sort: {created_at: -1}})
+}
 
 priceSchema.plugin(uniqueValidator)
 module.exports = mongoose.model('Price', priceSchema);
