@@ -230,7 +230,6 @@ const getValueChanges = async (req, res, next) => {
 
     try {
         const prices = await Price.getAll();
-        console.log(prices);
         data = [...(prices || []).map(price => new Fluctuation(price)), ...data];
     } catch (e) {
 

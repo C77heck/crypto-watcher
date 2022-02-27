@@ -32,8 +32,6 @@ purchasedSchema.statics.deleteById = function (id) {
 }
 
 purchasedSchema.statics.updateDocument = function (id, data) {
-    console.log(this.findOne({_id: id}).first);
-    console.log({...data});
     return this.updateOne({_id: id}, {...data});
 }
 
