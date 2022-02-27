@@ -28,8 +28,8 @@ priceSchema.statics.getByIdentifier = function (identifier) {
     return this.findOne({identifier}, {}, {sort: {created_at: -1}})
 }
 
-priceSchema.statics.getAll = function () {
-    return this.find({}, {}, {sort: {created_at: -1}})
+priceSchema.statics.getAll = function (limit) {
+    return this.find({}, {}, {sort: {created_at: -1}, limit: limit})
 }
 
 priceSchema.plugin(uniqueValidator)

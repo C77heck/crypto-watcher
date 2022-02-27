@@ -229,7 +229,7 @@ const getValueChanges = async (req, res, next) => {
     let data = [];
 
     try {
-        const prices = await Price.getAll();
+        const prices = await Price.getAll(100);
         data = [...(prices || []).map(price => new Fluctuation(price)), ...data];
     } catch (e) {
 
