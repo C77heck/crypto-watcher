@@ -1,18 +1,24 @@
 class Fluctuation {
-    change_1h;
-    change_24h;
-    change_7d;
-    change_30d;
-    change_60d;
-    change_90d;
-
     constructor(price) {
-        this.change_1h = price?.quote?.HUF?.percentage_change_1h || ' - ';
-        this.change_24h = price?.quote?.HUF?.percentage_change_24h || ' - ';
-        this.change_7d = price?.quote?.HUF?.percentage_change_7h || ' - ';
-        this.change_30d = price?.quote?.HUF?.percentage_change_30d || ' - ';
-        this.change_60d = price?.quote?.HUF?.percentage_change_60d || ' - ';
-        this.change_90d = price?.quote?.HUF?.percentage_change_90d || ' - ';
+        this.name = price.name;
+        this.symbol = price.symbol;
+        this.price = price.price;
+        this.priceChangeLastHour = this.calc(price, 'percentChangeLastHour');
+        this.priceChangeLastDay = this.calc(price, 'percentChangeLastDay');
+        this.priceChangeLastWeek = this.calc(price, 'percentChangeLastWeek');
+        this.priceChangeLastMonth = this.calc(price, 'percentChangeLastMonth');
+        this.priceChangeLast60Days = this.calc(price, 'percentChangeLast60Days');
+        this.priceChangeLast90Days = this.calc(price, 'percentChangeLast90Days');
+        this.percentChangeLastHour = price.percentChangeLastHour;
+        this.percentChangeLastDay = price.percentChangeLastDay;
+        this.percentChangeLastWeek = price.percentChangeLastWeek;
+        this.percentChangeLastMonth = price.percentChangeLastMonth;
+        this.percentChangeLast60Days = price.percentChangeLast60Days;
+        this.percentChangeLast90Days = price.percentChangeLast90Days;
+    }
+
+    calc(price, prop) {
+        return price.price * (price[prop] + 1);
     }
 }
 

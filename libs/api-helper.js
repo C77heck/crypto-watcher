@@ -11,7 +11,8 @@ const latestListings = async () => {
                     'Accept-Encoding': 'deflate, gzip',
                 },
                 params: {
-                    convert: CURRENCY
+                    convert: CURRENCY,
+                    limit: 5000,
                 }
             });
             resolve(response?.data);

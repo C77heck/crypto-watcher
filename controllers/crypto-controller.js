@@ -11,6 +11,13 @@ const {handleError} = require("../libs/error-handler");
 
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
+
+    try {
+        await Price.remove({});
+    } catch (e) {
+
+    }
+
     const listings = await latestListings();
 
     if (!!listings.status && !listings.status.error_code) {
@@ -43,12 +50,18 @@ const getAssets = async (req, res, next) => {
 const savePrices = async (listings, date) => {
     for (const listing of listings) {
         try {
-            const {id, name, symbol, quote: {HUF: {price, percent_change_1h}},} = listing;
+            const {id, name, symbol, quote: {HUF}} = listing;
             const createdPrice = new Price({
-                name, symbol, price,
+                name, symbol,
+                price: HUF.price,
                 identifier: id,
                 created_at: date,
-                percentChangeLastHour: percent_change_1h,
+                percentChangeLastHour: HUF.percent_change_1h,
+                percentChangeLastDay: HUF.percent_change_24h,
+                percentChangeLastWeek: HUF.percent_change_7d,
+                percentChangeLastMonth: HUF.percent_change_30d,
+                percentChangeLast60Days: HUF.percent_change_60d,
+                percentChangeLast90Days: HUF.percent_change_90d,
             });
 
             await createdPrice.save();
@@ -179,7 +192,7 @@ const getPurcasedPrices = async (req, res, next) => {
             });
         }
     }
-    console.log(data);
+
     res.json({items: data})
 }
 
@@ -212,8 +225,10 @@ const getShouldSell = async (req, res, next) => {
 
 const getValueChanges = async (req, res, next) => {
     let data = [];
+
     try {
         const prices = await Price.getAll();
+        console.log(prices);
         data = [...(prices || []).map(price => new Fluctuation(price)), ...data];
     } catch (e) {
 
