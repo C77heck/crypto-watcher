@@ -11,13 +11,7 @@ const {handleError} = require("../libs/error-handler");
 
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
-
-    try {
-        await Price.remove({});
-    } catch (e) {
-
-    }
-
+    //await clearPriceDB();
     const listings = await latestListings();
 
     if (!!listings.status && !listings.status.error_code) {
@@ -32,6 +26,14 @@ const getLatestListings = async (req, res, next) => {
     }
 
     res.json({listings})
+}
+
+const clearPriceDB = async () => {
+    try {
+        await Price.remove({});
+    } catch (e) {
+
+    }
 }
 
 const getAssets = async (req, res, next) => {
