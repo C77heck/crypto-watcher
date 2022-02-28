@@ -22,12 +22,13 @@ const {handleError} = require("../libs/error-handler");
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
     //await clearPriceDB();
+
     const listings = await latestListings();
 
     if (!!listings.status && !listings.status.error_code) {
         await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
         await saveAssets((listings?.data || []));
-        await saveFluctuationAsPaginated((listings?.data || []));
+        await saveFluctuationAsPaginated();
     }
 
     res.json({listings})
@@ -44,7 +45,8 @@ const saveAssets = async (data) => {
     await set(CRYPTOS_FOR_SELECT, json(assets));
 }
 
-const saveFluctuationAsPaginated = async (data) => {
+const saveFluctuationAsPaginated = async () => {
+    const data = await Price.getAll();
     const paginationLength = numArray(Math.round(data.length / 100) || 1);
     const pages = [];
     for (const page of paginationLength) {
@@ -58,7 +60,11 @@ const saveFluctuationAsPaginated = async (data) => {
 }
 
 const formatFluctuation = (prices, page) => {
-    return (prices.slice((page - 1 * 100), (page * 100)) || []).map(price => new Fluctuation(price));
+    const startPoint = ((page - 1) * 100) > 0 ? ((page - 1) * 100) : 0;
+    const endPoint = (page * 100);
+    console.log(startPoint, endPoint, prices.slice((page - 1 * 100), (page * 100)).length);
+
+    return (prices.slice(startPoint, endPoint) || []).map(price => new Fluctuation(price));
 }
 
 const clearPriceDB = async () => {
@@ -75,7 +81,7 @@ const getAssets = async (req, res, next) => {
     try {
         const assets = await get(CRYPTOS_FOR_SELECT);
 
-        res.json({assets: !!assets ? json(assets) : []});
+        res.json({assets: assets || []});
     } catch (e) {
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
@@ -269,7 +275,7 @@ const getValueChanges = async (req, res, next) => {
         const pagination = await get(CRYPTO_PAGINATION);
         total = pagination.length;
         const pageProp = `${CRYPTO_FLUCTUATION}-${page}`;
-        console.log({page, pageProp}, await get(), pagination);
+        console.log({page, pageProp}, await get(pageProp), pagination);
         if (!pagination.includes(pageProp)) {
             throw new HttpError('There are no more pages found', 404);
         }
