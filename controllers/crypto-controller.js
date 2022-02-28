@@ -1,12 +1,22 @@
 const HttpError = require('../models/http-error');
 const Price = require('../models/prices');
 const Purchase = require('../models/purchase');
+const {numArray} = require("./libs/helpers");
 const {Fluctuation} = require("./libs/fluctuation");
 const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set} = require('../libs/redis-client');
 const {json, removeDuplicates} = require('../libs/helpers');
 const {terminal} = require("../libs/terminal-helper");
-const {CONSTANTS: {CRYPTOS_TO_FOLLOW, CRYPTOS_FOR_SELECT, CURRENCY, TRANSACTION_FEE}} = require('../libs/constants');
+const {
+    CONSTANTS: {
+        CRYPTOS_TO_FOLLOW,
+        CRYPTOS_FOR_SELECT,
+        CRYPTO_FLUCTUATION,
+        CRYPTO_PAGINATION,
+        CURRENCY,
+        TRANSACTION_FEE
+    }
+} = require('../libs/constants');
 const {handleError} = require("../libs/error-handler");
 
 const getLatestListings = async (req, res, next) => {
@@ -16,16 +26,40 @@ const getLatestListings = async (req, res, next) => {
 
     if (!!listings.status && !listings.status.error_code) {
         await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
-        const assets = (listings?.data || []).map(crypto => ({
-            name: crypto.name,
-            symbol: crypto.symbol,
-            id: crypto.id,
-            price: crypto?.quote[CURRENCY]?.price || 0,
-        }));
-        await set(CRYPTOS_FOR_SELECT, json(assets));
+        await saveAssets((listings?.data || []));
+        await saveFluctuationAsPaginated((listings?.data || []));
     }
 
     res.json({listings})
+}
+
+const saveAssets = async (data) => {
+    const assets = data.map(crypto => ({
+        name: crypto.name,
+        symbol: crypto.symbol,
+        id: crypto.id,
+        price: crypto?.quote[CURRENCY]?.price || 0,
+    }));
+
+    await set(CRYPTOS_FOR_SELECT, json(assets));
+}
+
+const saveFluctuationAsPaginated = async (data) => {
+    const paginationLength = numArray(Math.round(data.length / 100) || 1);
+    const pages = [];
+    for (const page of paginationLength) {
+        const pageId = `${CRYPTO_FLUCTUATION}-${page}`;
+        pages.push(pageId);
+        await set(pageId, json(formatFluctuation(data, page)));
+    }
+
+    await set(CRYPTO_PAGINATION, json(pages));
+
+}
+
+const formatFluctuation = (prices, page) => {
+    console.log(prices.slice(page - 1, page).length);
+    return (prices.slice(page - 1, page) || []).map(price => new Fluctuation(price));
 }
 
 const clearPriceDB = async () => {
@@ -53,6 +87,7 @@ const savePrices = async (listings, date) => {
     for (const listing of listings) {
         try {
             const {id, name, symbol, quote: {HUF}} = listing;
+
             const createdPrice = new Price({
                 name, symbol,
                 price: HUF.price,
@@ -226,11 +261,19 @@ const getShouldSell = async (req, res, next) => {
 }
 
 const getValueChanges = async (req, res, next) => {
+    const {page} = req.params; // num
+    const nextPage = `${CRYPTO_FLUCTUATION}-${page + 1}`;
     let data = [];
 
     try {
-        const prices = await Price.getAll(100);
-        data = [...(prices || []).map(price => new Fluctuation(price)), ...data];
+        CRYPTO_PAGINATION
+        const pagination = await get(CRYPTO_PAGINATION);
+        // we need to return the pagination when calling it first too.
+        if (!pagination.includes(nextPage)) {
+            throw new HttpError('There are no more pages found', 404);
+        }
+
+        data = [...(await get(nextPage))];
     } catch (e) {
 
         return next(new HttpError(`Something went wrong ${e}`, 500));
