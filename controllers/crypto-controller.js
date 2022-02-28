@@ -266,7 +266,7 @@ const getShouldSell = async (req, res, next) => {
 }
 
 const getValueChanges = async (req, res, next) => {
-    const page = parseFloat(req.headers.page || 1);
+    const page = parseFloat(req.params.page || 1);
     let data = [];
     let total = 0;
 
