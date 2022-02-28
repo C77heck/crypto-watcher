@@ -58,8 +58,7 @@ const saveFluctuationAsPaginated = async (data) => {
 }
 
 const formatFluctuation = (prices, page) => {
-    console.log(prices.slice(page - 1, page).length);
-    return (prices.slice(page - 1, page) || []).map(price => new Fluctuation(price));
+    return (prices.slice((page - 1 * 100), (page * 100)) || []).map(price => new Fluctuation(price));
 }
 
 const clearPriceDB = async () => {
@@ -261,25 +260,27 @@ const getShouldSell = async (req, res, next) => {
 }
 
 const getValueChanges = async (req, res, next) => {
-    const {page} = req.params; // num
-    const nextPage = `${CRYPTO_FLUCTUATION}-${page + 1}`;
+    const page = parseFloat(req.headers.page || 1);
     let data = [];
+    let total = 0;
 
     try {
         CRYPTO_PAGINATION
         const pagination = await get(CRYPTO_PAGINATION);
-        // we need to return the pagination when calling it first too.
-        if (!pagination.includes(nextPage)) {
+        total = pagination.length;
+        const pageProp = `${CRYPTO_FLUCTUATION}-${page}`;
+        console.log({page, pageProp}, await get(), pagination);
+        if (!pagination.includes(pageProp)) {
             throw new HttpError('There are no more pages found', 404);
         }
 
-        data = [...(await get(nextPage))];
+        data = [...(await get(pageProp))];
     } catch (e) {
 
         return next(new HttpError(`Something went wrong ${e}`, 500));
     }
 
-    res.json({items: data})
+    res.json({items: data, total: total})
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {
