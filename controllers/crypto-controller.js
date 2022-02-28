@@ -275,7 +275,8 @@ const getValueChanges = async (req, res, next) => {
         const pageProp = `${CRYPTO_FLUCTUATION}-${req.query.page}`;
 
         if (!pagination.includes(pageProp)) {
-            throw new HttpError('There are no more pages found', 404);
+
+            res.json({items: [], total: total})
         }
 
         data = [...(await get(pageProp))];
