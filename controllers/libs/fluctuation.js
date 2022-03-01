@@ -3,6 +3,7 @@ class Fluctuation {
         this.name = price.name;
         this.symbol = price.symbol;
         this.price = price.price;
+        this.identifier = price.identifier;
         this.priceChangeLastHour = this.calc(price, 'percentChangeLastHour');
         this.priceChangeLastDay = this.calc(price, 'percentChangeLastDay');
         this.priceChangeLastWeek = this.calc(price, 'percentChangeLastWeek');

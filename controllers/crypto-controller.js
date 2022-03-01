@@ -116,9 +116,9 @@ const startFollowing = async (req, res, next) => {
     handleError(req, next);
 
     try {
-        const {cryptos} = req.body;
+        const {cryptoId} = req.body;
         const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
-        const combined = removeDuplicates([...(followedCryptos || []), ...cryptos]);
+        const combined = removeDuplicates([...(followedCryptos || []), cryptoId]);
         await set(CRYPTOS_TO_FOLLOW, json(combined));
 
         res.json({combined, followedCryptos})
@@ -131,9 +131,9 @@ const stopFollowing = async (req, res, next) => {
     handleError(req, next);
 
     try {
-        const {cryptos} = req.body;
+        const {cryptoId} = req.body;
         const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
-        const filtered = (followedCryptos || []).filter(item => !cryptos.includes(item))
+        const filtered = (followedCryptos || []).filter(item => !cryptoId.includes(item))
         await set(CRYPTOS_TO_FOLLOW, json(filtered));
 
         res.json({filtered})
@@ -267,6 +267,7 @@ const getShouldSell = async (req, res, next) => {
 const getValueChanges = async (req, res, next) => {
     let data = [];
     let total = 0;
+    console.log(await get(CRYPTO_PAGINATION));
 
     try {
         const pagination = await get(CRYPTO_PAGINATION);

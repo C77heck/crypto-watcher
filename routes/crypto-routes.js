@@ -50,7 +50,7 @@ router.patch('/update_purchase/:id', [
 ], updatePurchase);
 
 router.post('/start_following',
-    [check('cryptos').not().isEmpty().escape().trim()],
+    [check('cryptoId').not().isEmpty().escape().trim()],
     startFollowing);
 
 router.delete('/stop_following', [check('cryptos').isArray()], stopFollowing);
