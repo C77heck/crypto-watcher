@@ -296,10 +296,7 @@ const getAllFromRedis = async (rounds) => {
 const search = (all, search) => {
     const regex = new RegExp(search, 'i');
 
-    return all.filter(item => {
-        console.log(regex.test(item?.name), search, regex);
-       return regex.test(item?.name) || regex.test(item?.symbol)
-    });
+    return all.flat().filter(item => regex.test(item?.name) || regex.test(item?.symbol));
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {
