@@ -280,7 +280,7 @@ const getValueChanges = async (req, res, next) => {
         if (!req.query.search) {
             data = [...(await get(pageProp))];
         } else {
-            res.json({items: search(await getAllFromRedis(total), req.query.search).slice(0, 99), total: 1})
+            res.json({items: search(await getAllFromRedis(total), req.query.search).slice(0, 10), total: 1})
         }
     } catch (e) {
 
