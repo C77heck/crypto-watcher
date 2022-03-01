@@ -49,7 +49,9 @@ router.patch('/update_purchase/:id', [
     check('thresholds').not().isEmpty(),
 ], updatePurchase);
 
-router.post('/start_following', [check('cryptos').isArray()], startFollowing);
+router.post('/start_following',
+    [check('cryptos').not().isEmpty().escape().trim()],
+    startFollowing);
 
 router.delete('/stop_following', [check('cryptos').isArray()], stopFollowing);
 router.delete('/delete_purchase/:id', [], deletePurchase);
