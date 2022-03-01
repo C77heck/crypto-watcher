@@ -62,7 +62,6 @@ const saveFluctuationAsPaginated = async () => {
 const formatFluctuation = (prices, page) => {
     const startPoint = ((page - 1) * 100) > 0 ? ((page - 1) * 100) : 0;
     const endPoint = (page * 100);
-    console.log(startPoint, endPoint, prices.slice((page - 1 * 100), (page * 100)).length);
 
     return (prices.slice(startPoint, endPoint) || []).map(price => new Fluctuation(price));
 }
@@ -268,24 +267,39 @@ const getShouldSell = async (req, res, next) => {
 const getValueChanges = async (req, res, next) => {
     let data = [];
     let total = 0;
-    console.log(req.query.page);
+
     try {
         const pagination = await get(CRYPTO_PAGINATION);
         total = pagination.length;
         const pageProp = `${CRYPTO_FLUCTUATION}-${req.query.page}`;
 
         if (!pagination.includes(pageProp)) {
-
             res.json({items: [], total: total})
         }
-
-        data = [...(await get(pageProp))];
+        if (!req.query.search) {
+            data = [...(await get(pageProp))];
+        } else {
+            data = search(await getAllFromRedis(total), req.query.search);
+        }
     } catch (e) {
 
         return next(new HttpError(`Something went wrong ${e}`, 500));
     }
 
     res.json({items: data, total: total})
+}
+
+const getAllFromRedis = async (rounds) => {
+    return await Promise.all(numArray(rounds).map(round => get(`${CRYPTO_FLUCTUATION}-${round}`)));
+}
+
+const search = (all, search) => {
+    const regex = new RegExp(search, 'i');
+
+    return all.filter(item => {
+        console.log(regex.test(item?.name), search, regex);
+       return regex.test(item?.name) || regex.test(item?.symbol)
+    });
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {
