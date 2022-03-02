@@ -25,7 +25,7 @@ const {handleError} = require("../libs/error-handler");
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
 
-    // await clearPriceDB();
+    await clearPriceDB();
 
     const listings = await latestListings();
 
@@ -54,6 +54,8 @@ const saveFluctuationAsPaginated = async () => {
         const prices = await Price.getAll();
         const favourites = await Favourite.getAll();
         const data = isFavourite(prices, favourites);
+        console.log(Array.isArray(data), Object.entries(data), Array.from(data), data);
+
         const paginationLength = numArray(Math.round(data.length / 100) || 1);
         const pages = [];
         for (const page of paginationLength) {
@@ -68,7 +70,7 @@ const saveFluctuationAsPaginated = async () => {
     }
 }
 
-const isFavourite = async (prices, favourites) => {
+const isFavourite = (prices, favourites) => {
     const identifiers = (favourites || []).map(favourite => favourite?.identifier);
 
     return prices.map(price => {
@@ -81,14 +83,18 @@ const isFavourite = async (prices, favourites) => {
 const formatFluctuation = (prices, page) => {
     const startPoint = ((page - 1) * 100) > 0 ? ((page - 1) * 100) : 0;
     const endPoint = (page * 100);
+    try {
+        return ((prices || []).slice(startPoint, endPoint) || []).map(price => new Fluctuation(price));
 
-    return (prices.slice(startPoint, endPoint) || []).map(price => new Fluctuation(price));
+    } catch (e) {
+        console.log(Array.isArray(prices), e);
+    }
 }
 
 const clearPriceDB = async () => {
     try {
         await Price.deleteMany({});
-        await clearRedis();
+        // await clearRedis();
     } catch (e) {
 
     }
@@ -131,7 +137,9 @@ const savePrices = async (listings, date) => {
 
             await createdPrice.save();
         } catch (e) {
-            console.log(e);
+
+            console.log('HERE', e, listing);
+            continue
         }
     }
 }

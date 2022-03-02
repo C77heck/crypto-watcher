@@ -11,10 +11,10 @@ const priceSchema = new Schema({
     created_at: {type: Date, required: true},
     percentChangeLastHour: {type: Number, required: true},
     percentChangeLastDay: {type: Number, required: true},
-    percentChangeLastWeek: {type: Number, required: true},
-    percentChangeLastMonth: {type: Number, required: true},
-    percentChangeLast60Days: {type: Number, required: true},
-    percentChangeLast90Days: {type: Number, required: true},
+    percentChangeLastWeek: {type: Number},
+    percentChangeLastMonth: {type: Number},
+    percentChangeLast60Days: {type: Number},
+    percentChangeLast90Days: {type: Number},
 });
 priceSchema.statics.findByName = function (name) {
     return this.where({name: new RegExp(name, 'i')});
