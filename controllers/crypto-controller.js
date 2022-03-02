@@ -318,8 +318,10 @@ const getShouldSell = async (req, res, next) => {
 
 const getFavourites = async (req, res, next) => {
     try {
+        // finish the favourties
         const favouritess = await Favourite.getAll();
         const favourites = await get(CRYPTOS_TO_FOLLOW)
+        console.log(favourites);
         res.json({items: favourites})
     } catch (e) {
 
