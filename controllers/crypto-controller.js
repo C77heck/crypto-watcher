@@ -164,10 +164,12 @@ const addToFavourites = async (req, res, next) => {
 
 const refreshFavouriteList = async (cryptoId, isDelete = false) => {
     try {
-        const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
+
+        const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
+        console.log(followedCryptos);
         const identifiers = isDelete ? followedCryptos.filter(crypto => crypto?.identifier !== cryptoId) : followedCryptos;
         const prices = await Price.whereIn(identifiers);
-        console.log(prices);
+
         await set(CRYPTOS_TO_FOLLOW, json(prices));
     } catch (e) {
         console.log('Something went wrong', e);

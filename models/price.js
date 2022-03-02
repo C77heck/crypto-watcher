@@ -34,7 +34,7 @@ priceSchema.statics.getAll = function (limit) {
 }
 
 priceSchema.statics.whereIn = function (identifiers) {
-    return this.find
+    return this.find()
         .where('identifier')
         .in(identifiers);
 }
