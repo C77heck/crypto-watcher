@@ -1,18 +1,21 @@
 const HttpError = require('../models/http-error');
-const Price = require('../models/prices');
+const Price = require('../models/price');
+const Favourite = require('../models/favourite');
 const Purchase = require('../models/purchase');
 const {numArray} = require("./libs/helpers");
 const {Fluctuation} = require("./libs/fluctuation");
 const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
-const {get, set} = require('../libs/redis-client');
+const {get, set, clearAll, clear} = require('../libs/redis-client');
 const {json, removeDuplicates} = require('../libs/helpers');
 const {terminal} = require("../libs/terminal-helper");
 const {
     CONSTANTS: {
-        CRYPTOS_TO_FOLLOW,
-        CRYPTOS_FOR_SELECT,
-        CRYPTO_FLUCTUATION,
-        CRYPTO_PAGINATION,
+        REDIS: {
+            CRYPTOS_TO_FOLLOW,
+            CRYPTOS_FOR_SELECT,
+            CRYPTO_FLUCTUATION,
+            CRYPTO_PAGINATION,
+        },
         CURRENCY,
         TRANSACTION_FEE
     }
@@ -21,7 +24,8 @@ const {handleError} = require("../libs/error-handler");
 
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
-    //await clearPriceDB();
+
+    // await clearPriceDB();
 
     const listings = await latestListings();
 
@@ -46,17 +50,32 @@ const saveAssets = async (data) => {
 }
 
 const saveFluctuationAsPaginated = async () => {
-    const data = await Price.getAll();
-    const paginationLength = numArray(Math.round(data.length / 100) || 1);
-    const pages = [];
-    for (const page of paginationLength) {
-        const pageId = `${CRYPTO_FLUCTUATION}-${page}`;
-        pages.push(pageId);
-        await set(pageId, json(formatFluctuation(data, page)));
+    try {
+        const prices = await Price.getAll();
+        const favourites = await Favourite.getAll();
+        const data = isFavourite(prices, favourites);
+        const paginationLength = numArray(Math.round(data.length / 100) || 1);
+        const pages = [];
+        for (const page of paginationLength) {
+            const pageId = `${CRYPTO_FLUCTUATION}-${page}`;
+            pages.push(pageId);
+            await set(pageId, json(formatFluctuation(data, page)));
+        }
+
+        await set(CRYPTO_PAGINATION, json(pages));
+    } catch (e) {
+        console.log(e);
     }
+}
 
-    await set(CRYPTO_PAGINATION, json(pages));
+const isFavourite = async (prices, favourites) => {
+    const identifiers = (favourites || []).map(favourite => favourite?.identifier);
 
+    return prices.map(price => {
+        price.isFavourite = identifiers.includes(price?.identifier)
+
+        return price;
+    });
 }
 
 const formatFluctuation = (prices, page) => {
@@ -68,10 +87,15 @@ const formatFluctuation = (prices, page) => {
 
 const clearPriceDB = async () => {
     try {
-        await Price.remove({});
+        await Price.deleteMany({});
+        await clearRedis();
     } catch (e) {
 
     }
+}
+
+const clearRedis = async () => {
+    await clearAll();
 }
 
 const getAssets = async (req, res, next) => {
@@ -112,34 +136,57 @@ const savePrices = async (listings, date) => {
     }
 }
 
-const startFollowing = async (req, res, next) => {
+const addToFavourites = async (req, res, next) => {
     handleError(req, next);
-
+    // will need a mongo saving then write that out to redis as a whole object.
     try {
         const {cryptoId} = req.body;
-        const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
-        const combined = removeDuplicates([...(followedCryptos || []), cryptoId]);
-        await set(CRYPTOS_TO_FOLLOW, json(combined));
 
-        res.json({combined, followedCryptos})
+        const priceInstance = await Price.getByIdentifier(cryptoId);
+
+        const createdFavourite = new Favourite({
+            name: priceInstance.name,
+            symbol: priceInstance.symbol,
+            price: priceInstance.price,
+            identifier: priceInstance.identifier,
+        });
+
+        await createdFavourite.save();
+
+        await refreshFavouriteList(cryptoId);
     } catch (e) {
+        console.log(e);
         return next(new HttpError('Sorry, something went wrong.', 500));
+    }
+
+    res.json({message: 'Success'})
+}
+
+const refreshFavouriteList = async (cryptoId, isDelete = false) => {
+    try {
+        const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
+        const identifiers = isDelete ? followedCryptos.filter(crypto => crypto?.identifier !== cryptoId) : followedCryptos;
+        const prices = await Price.whereIn(identifiers);
+        console.log(prices);
+        await set(CRYPTOS_TO_FOLLOW, json(prices));
+    } catch (e) {
+        console.log('Something went wrong', e);
     }
 }
 
-const stopFollowing = async (req, res, next) => {
+const removeFromFavourties = async (req, res, next) => {
     handleError(req, next);
-
     try {
         const {cryptoId} = req.body;
-        const followedCryptos = json(await get(CRYPTOS_TO_FOLLOW), []);
-        const filtered = (followedCryptos || []).filter(item => !cryptoId.includes(item))
-        await set(CRYPTOS_TO_FOLLOW, json(filtered));
 
-        res.json({filtered})
+        await Favourite.deleteByIdentifier(cryptoId);
+
+        await refreshFavouriteList(cryptoId, true);
     } catch (e) {
         return next(new HttpError('Sorry, something went wrong.', 500));
     }
+
+    res.json({message: 'Success'})
 }
 
 const addNewPurchase = async (req, res, next) => {
@@ -267,14 +314,12 @@ const getShouldSell = async (req, res, next) => {
 const getValueChanges = async (req, res, next) => {
     let data = [];
     let total = 0;
-    console.log(await get(CRYPTO_PAGINATION));
-
     try {
         const pagination = await get(CRYPTO_PAGINATION);
-        total = pagination.length;
+        total = (pagination || []).length;
         const pageProp = `${CRYPTO_FLUCTUATION}-${req.query.page}`;
 
-        if (!pagination.includes(pageProp)) {
+        if (!(pagination || []).includes(pageProp)) {
             res.json({items: [], total: total})
         }
         if (!req.query.search) {
@@ -315,8 +360,8 @@ const sendNotification = (level, cryptoName) => {
 exports.getLatestListings = getLatestListings;
 exports.getNewListings = getNewListings;
 exports.getAllCryptos = getAllCryptos;
-exports.startFollowing = startFollowing;
-exports.stopFollowing = stopFollowing;
+exports.addToFavourites = addToFavourites;
+exports.removeFromFavourties = removeFromFavourties;
 exports.getShouldSell = getShouldSell;
 exports.addNewPurchase = addNewPurchase;
 exports.updatePurchase = updatePurchase;

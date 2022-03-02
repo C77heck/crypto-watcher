@@ -1,5 +1,7 @@
 const Redis = require("ioredis");
+const {numArray} = require("../controllers/libs/helpers");
 const {json} = require("./helpers");
+const {CONSTANTS: {REDIS}} = require('../libs/constants');
 
 const redis = new Redis({
     host: process.env.REDIS_HOST,
@@ -27,15 +29,21 @@ const set = async (key, value) => {
 
 const clear = async (key) => {
     try {
-        await redis.remove(key);
+        await redis.set(key, null);
     } catch (e) {
         console.log(e);
     }
 }
 
-const clearAll = async (key) => {
+const clearAll = async () => {
     try {
-        await redis.remove();
+        for (const key in REDIS) {
+            await clear(REDIS[key]);
+        }
+
+        for (const key of numArray(1000)) {
+            await clear(`${REDIS.CRYPTO_FLUCTUATION}-${key}`);
+        }
     } catch (e) {
         console.log(e);
     }

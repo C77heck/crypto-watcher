@@ -5,8 +5,8 @@ const {
     getLatestListings,
     getNewListings,
     getAllCryptos,
-    startFollowing,
-    stopFollowing,
+    addToFavourites,
+    removeFromFavourties,
     getShouldSell,
     addNewPurchase,
     updatePurchase,
@@ -49,11 +49,15 @@ router.patch('/update_purchase/:id', [
     check('thresholds').not().isEmpty(),
 ], updatePurchase);
 
-router.post('/start_following',
+router.post('/add-to-favourites',
     [check('cryptoId').not().isEmpty().escape().trim()],
-    startFollowing);
+    addToFavourites);
 
-router.delete('/stop_following', [check('cryptos').isArray()], stopFollowing);
-router.delete('/delete_purchase/:id', [], deletePurchase);
+router.put('/remove-from-favourites',
+    [check('cryptoId').not().isEmpty().escape().trim()],
+    removeFromFavourties);
+
+router.delete('/delete_purchase/:id', [],
+    deletePurchase);
 
 module.exports = router;

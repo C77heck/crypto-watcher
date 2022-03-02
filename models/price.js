@@ -33,5 +33,11 @@ priceSchema.statics.getAll = function (limit) {
     return this.find({}, {}, {sort: {created_at: -1}, limit: limit})
 }
 
+priceSchema.statics.whereIn = function (identifiers) {
+    return this.find
+        .where('identifier')
+        .in(identifiers);
+}
+
 priceSchema.plugin(uniqueValidator)
 module.exports = mongoose.model('Price', priceSchema);
