@@ -169,7 +169,6 @@ const refreshFavouriteList = async (cryptoId, isDelete = false) => {
     try {
 
         const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
-        console.log(followedCryptos);
         const identifiers = isDelete ? followedCryptos.filter(crypto => crypto?.identifier !== cryptoId) : followedCryptos;
         const prices = await Price.whereIn(identifiers);
 
@@ -319,7 +318,8 @@ const getShouldSell = async (req, res, next) => {
 
 const getFavourites = async (req, res, next) => {
     try {
-        const favourites = await Favourite.getAll();
+        const favouritess = await Favourite.getAll();
+        const favourites = await get(CRYPTOS_TO_FOLLOW)
         res.json({items: favourites})
     } catch (e) {
 
