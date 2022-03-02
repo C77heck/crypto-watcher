@@ -5,6 +5,8 @@ const {
     getLatestListings,
     getNewListings,
     getAllCryptos,
+    getValueChanges,
+    getFavourites,
     addToFavourites,
     removeFromFavourties,
     getShouldSell,
@@ -13,7 +15,6 @@ const {
     getAssets,
     deletePurchase,
     getPurcasedPrices,
-    getValueChanges,
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
@@ -48,6 +49,10 @@ router.patch('/update_purchase/:id', [
     check('amount').not().isEmpty().escape().trim().isNumeric(),
     check('thresholds').not().isEmpty(),
 ], updatePurchase);
+
+router.get('/favourites',
+    [],
+    getFavourites);
 
 router.post('/add-to-favourites',
     [check('cryptoId').not().isEmpty().escape().trim()],

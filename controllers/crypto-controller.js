@@ -54,7 +54,6 @@ const saveFluctuationAsPaginated = async () => {
         const prices = await Price.getAll();
         const favourites = await Favourite.getAll();
         const data = isFavourite(prices, favourites);
-        console.log(Array.isArray(data), Object.entries(data), Array.from(data), data);
 
         const paginationLength = numArray(Math.round(data.length / 100) || 1);
         const pages = [];
@@ -83,12 +82,8 @@ const isFavourite = (prices, favourites) => {
 const formatFluctuation = (prices, page) => {
     const startPoint = ((page - 1) * 100) > 0 ? ((page - 1) * 100) : 0;
     const endPoint = (page * 100);
-    try {
-        return ((prices || []).slice(startPoint, endPoint) || []).map(price => new Fluctuation(price));
 
-    } catch (e) {
-        console.log(Array.isArray(prices), e);
-    }
+    return ((prices || []).slice(startPoint, endPoint) || []).map(price => new Fluctuation(price));
 }
 
 const clearPriceDB = async () => {
@@ -321,6 +316,17 @@ const getShouldSell = async (req, res, next) => {
     res.json({items: data})
 }
 
+
+const getFavourites = async (req, res, next) => {
+    try {
+        const favourites = await Favourite.getAll();
+        res.json({items: favourites})
+    } catch (e) {
+
+        return next(new HttpError(`Something went wrong ${e}`, 500));
+    }
+}
+
 const getValueChanges = async (req, res, next) => {
     let data = [];
     let total = 0;
@@ -379,3 +385,4 @@ exports.getAssets = getAssets;
 exports.deletePurchase = deletePurchase;
 exports.getPurcasedPrices = getPurcasedPrices;
 exports.getValueChanges = getValueChanges;
+exports.getFavourites = getFavourites;
