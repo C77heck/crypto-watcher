@@ -27,17 +27,21 @@ const {handleError} = require("../libs/error-handler");
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
 
-    await clearPriceDB();
+    try {
+        await clearPriceDB();
 
-    const listings = await latestListings();
+        const listings = await latestListings();
 
-    if (!!listings.status && !listings.status.error_code) {
-        await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
-        await saveAssets((listings?.data || []));
-        await saveFluctuationAsPaginated();
+        if (!!listings.status && !listings.status.error_code) {
+            await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
+            await saveAssets((listings?.data || []));
+            await saveFluctuationAsPaginated();
+        }
+
+        res.json({listings})
+    } catch (e) {
+        return next(new HttpError(`Sorry, something went wrong.${e}`, 500));
     }
-
-    res.json({listings})
 }
 
 const saveAssets = async (data) => {
@@ -205,7 +209,7 @@ const refreshFavouriteList = async (cryptoId, isDelete = false) => {
         }));
 
         await set(CRYPTOS_TO_FOLLOW, json(identifiers));
-        
+
         await set(FAVOURITE_CRYPTOS, json(prices.flat()));
     } catch (e) {
         console.log('Something went wrong', e);
