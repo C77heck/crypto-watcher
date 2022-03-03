@@ -155,9 +155,9 @@ const addToFavourites = async (req, res, next) => {
             identifier: priceInstance.identifier,
         });
 
-        const favourite = await createdFavourite.save();
+        await createdFavourite.save();
 
-        await refreshFavouriteList(favourite?.identifier);
+        await refreshFavouriteList(cryptoId);
     } catch (e) {
         console.log(e);
         return next(new HttpError('Sorry, something went wrong.', 500));
@@ -166,23 +166,12 @@ const addToFavourites = async (req, res, next) => {
     res.json({message: 'Success'})
 }
 
-const refreshFavouriteList = async (cryptoId, isDelete = false) => {
-    try {
-        const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
-        const identifiers = isDelete ? followedCryptos.filter(crypto => crypto?.identifier !== cryptoId) : [...(followedCryptos || []), cryptoId];
-        const prices = await Promise.all(identifiers.map((identifier) => {
-            return Price.getByIdentifier(identifier)
-        }));
-        await set(CRYPTOS_TO_FOLLOW, json(identifiers));
-        await set(FAVOURITE_CRYPTOS, json(prices.flat()));
-    } catch (e) {
-        console.log('Something went wrong', e);
-    }
-}
 
 const removeFromFavourties = async (req, res, next) => {
     handleError(req, next);
     try {
+        // await flushFavourites();
+
         const {cryptoId} = req.body;
 
         await Favourite.deleteByIdentifier(cryptoId);
@@ -193,6 +182,34 @@ const removeFromFavourties = async (req, res, next) => {
     }
 
     res.json({message: 'Success'})
+}
+
+
+const flushFavourites = async () => {
+    await Favourite.deleteMany();
+    await set(CRYPTOS_TO_FOLLOW, null);
+    await set(FAVOURITE_CRYPTOS, null);
+}
+
+
+const refreshFavouriteList = async (cryptoId, isDelete = false) => {
+    try {
+        const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
+
+        const identifiers = isDelete
+            ? followedCryptos.filter(crypto => parseFloat(crypto) !== parseFloat(cryptoId))
+            : [...(followedCryptos || []), cryptoId];
+
+        const prices = await Promise.all(identifiers.map((identifier) => {
+            return Price.getByIdentifier(identifier)
+        }));
+
+        await set(CRYPTOS_TO_FOLLOW, json(identifiers));
+        
+        await set(FAVOURITE_CRYPTOS, json(prices.flat()));
+    } catch (e) {
+        console.log('Something went wrong', e);
+    }
 }
 
 const addNewPurchase = async (req, res, next) => {

@@ -58,7 +58,7 @@ router.post('/add-to-favourites',
     [check('cryptoId').not().isEmpty().escape().trim()],
     addToFavourites);
 
-router.put('/remove-from-favourites',
+router.delete('/remove-from-favourites',
     [check('cryptoId').not().isEmpty().escape().trim()],
     removeFromFavourties);
 
