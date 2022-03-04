@@ -12,6 +12,7 @@ class Analysis {
         this.priceChangeLast90Days = this.calc(price, 'percentChangeLast90Days');
         this.isGoodBuy = this.getIsGoodBuy();
         this.isDecline = this.getIsDecline();
+        this.stabilityRating = this.checkPriceStability();
     }
 
     calc(price, prop) {
@@ -23,10 +24,15 @@ class Analysis {
     }
 
     getIsGoodBuy() {
+        // check with visualization
         return true;
     }
 
     getIsDecline() {
+        return true;
+    }
+
+    checkPriceStability(){
         return true;
     }
 }
