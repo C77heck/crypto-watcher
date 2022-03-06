@@ -16,11 +16,12 @@ class Analysis {
     }
 
     calc(price, prop) {
-        return price.price * (price[prop] + 1);
+        return price.price * (price[prop] < 0 ? (Math.abs(price[prop]) / 100) + 1 : price[prop] / 100);
     }
 
     getMedian() {
         // get the median from the 90 days 60 days and 30 days then see how far the value is
+        return 0;
     }
 
     getIsGoodBuy() {
@@ -32,7 +33,7 @@ class Analysis {
         return true;
     }
 
-    checkPriceStability(){
+    checkPriceStability() {
         return true;
     }
 }
