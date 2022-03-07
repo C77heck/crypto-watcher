@@ -13,6 +13,10 @@ class Analysis {
         this.isGoodBuy = this.getIsGoodBuy();
         this.isDecline = this.getIsDecline();
         this.stabilityRating = this.checkPriceStability();
+        this.median = this.getMedian();
+        this.isGoodBuy = this.getIsGoodBuy();
+        this.isDecline = this.getIsDecline();
+        this.priceStability = this.checkPriceStability();
     }
 
     calc(price, prop) {
@@ -20,21 +24,31 @@ class Analysis {
     }
 
     getMedian() {
-        // get the median from the 90 days 60 days and 30 days then see how far the value is
-        return 0;
+        return (this.priceChangeLastMonth + this.priceChangeLast60Days + this.priceChangeLast90Days) / 3;
     }
 
     getIsGoodBuy() {
-        // check with visualization
-        return true;
+        // make a ranking with percentage based differences
+        return this.median > this.price;
     }
 
     getIsDecline() {
-        return true;
+        return this.price < this.priceChangeLastHour && this.price < this.priceChangeLastDay && this.price < this.priceChangeLastWeek;
     }
 
     checkPriceStability() {
-        return true;
+        const percentageDiff = Math.abs(this.median / this.price);
+        if (percentageDiff < 1) {
+            return percentageDiff + 0.1 < 1
+                ? 'below strong' : percentageDiff + 0.2 < 1
+                    ? 'below okay' : percentageDiff + 0.3 < 1
+                        ? 'below weak' : percentageDiff + 0.4 < 1 ? 'below very weak' : 'Do not bother';
+        } else {
+            return percentageDiff + 0.1 < 1
+                ? 'above weak' : percentageDiff + 0.2 < 1
+                    ? 'above okay' : percentageDiff + 0.3 < 1
+                        ? 'above strong' : percentageDiff + 0.4 < 1 ? 'above very strong' : 'too strong. wait for decline';
+        }
     }
 }
 
