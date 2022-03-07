@@ -289,7 +289,7 @@ const getAllCryptos = async (req, res, next) => {
 
 const getPurcasedPrices = async (req, res, next) => {
     handleError(req, next);
-
+    return next(new Error('something'))
     const purchasedCryptos = await Purchase.getAll();
     const data = [];
 
