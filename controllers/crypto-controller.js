@@ -15,7 +15,9 @@ const {
             CRYPTOS_FOR_SELECT,
             CRYPTO_FLUCTUATION,
             CRYPTO_PAGINATION,
+            FAVOURITE_CRYPTOS,
         },
+        PAGINATION_VAL,
         CURRENCY,
         TRANSACTION_FEE
     }
@@ -25,17 +27,21 @@ const {handleError} = require("../libs/error-handler");
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
 
-    await clearPriceDB();
+    try {
+        await clearPriceDB();
 
-    const listings = await latestListings();
+        const listings = await latestListings();
 
-    if (!!listings.status && !listings.status.error_code) {
-        await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
-        await saveAssets((listings?.data || []));
-        await saveFluctuationAsPaginated();
+        if (!!listings.status && !listings.status.error_code) {
+            await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
+            await saveAssets((listings?.data || []));
+            await saveFluctuationAsPaginated();
+        }
+
+        res.json({listings})
+    } catch (e) {
+        return next(new HttpError(`Sorry, something went wrong.${e}`, 500));
     }
-
-    res.json({listings})
 }
 
 const saveAssets = async (data) => {
@@ -51,16 +57,13 @@ const saveAssets = async (data) => {
 
 const saveFluctuationAsPaginated = async () => {
     try {
-        const prices = await Price.getAll();
-        const favourites = await Favourite.getAll();
-        const data = isFavourite(prices, favourites);
-
-        const paginationLength = numArray(Math.round(data.length / 100) || 1);
+        const data = await Price.getAll();
+        const paginationLength = numArray(Math.round(data.length / PAGINATION_VAL) || 1);
         const pages = [];
         for (const page of paginationLength) {
             const pageId = `${CRYPTO_FLUCTUATION}-${page}`;
             pages.push(pageId);
-            await set(pageId, json(formatFluctuation(data, page)));
+            await set(pageId, json(formatFluctuation(data, page, PAGINATION_VAL)));
         }
 
         await set(CRYPTO_PAGINATION, json(pages));
@@ -69,19 +72,23 @@ const saveFluctuationAsPaginated = async () => {
     }
 }
 
-const isFavourite = (prices, favourites) => {
-    const identifiers = (favourites || []).map(favourite => favourite?.identifier);
+const isFavourite = async (prices) => {
+    const cachedFavourites = await get(CRYPTOS_TO_FOLLOW);
+    const favourites = !!cachedFavourites && !!cachedFavourites.length
+        ? cachedFavourites
+        : (await Favourite.getAll() || []).map(favourite => favourite?.identifier);
 
     return prices.map(price => {
-        price.isFavourite = identifiers.includes(price?.identifier)
+        price.isFavourite = favourites.includes(price?.identifier)
 
         return price;
     });
+
 }
 
-const formatFluctuation = (prices, page) => {
-    const startPoint = ((page - 1) * 100) > 0 ? ((page - 1) * 100) : 0;
-    const endPoint = (page * 100);
+const formatFluctuation = (prices, page, items = 20) => {
+    const startPoint = ((page - 1) * items) > 0 ? ((page - 1) * items) : 0;
+    const endPoint = (page * items);
 
     return ((prices || []).slice(startPoint, endPoint) || []).map(price => new Fluctuation(price));
 }
@@ -133,7 +140,7 @@ const savePrices = async (listings, date) => {
             await createdPrice.save();
         } catch (e) {
 
-            console.log('HERE', e, listing);
+            console.log('HERE', e);
             continue
         }
     }
@@ -141,10 +148,8 @@ const savePrices = async (listings, date) => {
 
 const addToFavourites = async (req, res, next) => {
     handleError(req, next);
-    // will need a mongo saving then write that out to redis as a whole object.
     try {
         const {cryptoId} = req.body;
-
         const priceInstance = await Price.getByIdentifier(cryptoId);
 
         const createdFavourite = new Favourite({
@@ -165,6 +170,7 @@ const addToFavourites = async (req, res, next) => {
     res.json({message: 'Success'})
 }
 
+<<<<<<< HEAD
 const refreshFavouriteList = async (cryptoId, isDelete = false) => {
     try {
         // it does not refresh
@@ -178,10 +184,14 @@ const refreshFavouriteList = async (cryptoId, isDelete = false) => {
         console.log('Something went wrong', e);
     }
 }
+=======
+>>>>>>> 2ebfffb415f26c6b88705a25602550c72acbdd9a
 
 const removeFromFavourties = async (req, res, next) => {
     handleError(req, next);
     try {
+        // await flushFavourites();
+
         const {cryptoId} = req.body;
 
         await Favourite.deleteByIdentifier(cryptoId);
@@ -192,6 +202,34 @@ const removeFromFavourties = async (req, res, next) => {
     }
 
     res.json({message: 'Success'})
+}
+
+
+const flushFavourites = async () => {
+    await Favourite.deleteMany();
+    await set(CRYPTOS_TO_FOLLOW, null);
+    await set(FAVOURITE_CRYPTOS, null);
+}
+
+
+const refreshFavouriteList = async (cryptoId, isDelete = false) => {
+    try {
+        const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
+
+        const identifiers = isDelete
+            ? followedCryptos.filter(crypto => parseFloat(crypto) !== parseFloat(cryptoId))
+            : [...(followedCryptos || []), cryptoId];
+
+        const prices = await Promise.all(identifiers.map((identifier) => {
+            return Price.getByIdentifier(identifier)
+        }));
+
+        await set(CRYPTOS_TO_FOLLOW, json(identifiers));
+
+        await set(FAVOURITE_CRYPTOS, json(prices.flat()));
+    } catch (e) {
+        console.log('Something went wrong', e);
+    }
 }
 
 const addNewPurchase = async (req, res, next) => {
@@ -319,18 +357,15 @@ const getShouldSell = async (req, res, next) => {
 
 const getFavourites = async (req, res, next) => {
     try {
-        // finish the favourties
-        const favouritess = await Favourite.getAll();
-        const favourites = await get(CRYPTOS_TO_FOLLOW)
-        console.log(favourites);
+        const favourites = await get(FAVOURITE_CRYPTOS)
+
         res.json({items: favourites})
     } catch (e) {
-
-        return next(new HttpError(`Something went wrong ${e}`, 500));
+        return next(new HttpError(`Something went wrong`, 500));
     }
 }
 
-const getValueChanges = async (req, res, next) => {
+const getCryptosWithFluctuation = async (req, res, next) => {
     let data = [];
     let total = 0;
     try {
@@ -339,12 +374,16 @@ const getValueChanges = async (req, res, next) => {
         const pageProp = `${CRYPTO_FLUCTUATION}-${req.query.page}`;
 
         if (!(pagination || []).includes(pageProp)) {
-            res.json({items: [], total: total})
+            res.json({items: [], total: 0})
         }
+        const items = await get(pageProp)
+
         if (!req.query.search) {
-            data = [...(await get(pageProp))];
+            data = await isFavourite(items);
         } else {
-            res.json({items: search(await getAllFromRedis(total), req.query.search).slice(0, 10), total: 1})
+            const all = await getAllFromRedis(total);
+            data = search(await isFavourite(all), req.query.search).slice(0, PAGINATION_VAL)
+            total = 1;
         }
     } catch (e) {
 
@@ -387,5 +426,5 @@ exports.updatePurchase = updatePurchase;
 exports.getAssets = getAssets;
 exports.deletePurchase = deletePurchase;
 exports.getPurcasedPrices = getPurcasedPrices;
-exports.getValueChanges = getValueChanges;
+exports.getCryptosWithFluctuation = getCryptosWithFluctuation;
 exports.getFavourites = getFavourites;

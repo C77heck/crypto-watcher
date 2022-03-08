@@ -5,7 +5,7 @@ const {
     getLatestListings,
     getNewListings,
     getAllCryptos,
-    getValueChanges,
+    getCryptosWithFluctuation,
     getFavourites,
     addToFavourites,
     removeFromFavourties,
@@ -30,7 +30,7 @@ router.get('/all_cryptos', getAllCryptos);
 
 router.get('/get_purchases', getPurcasedPrices);
 
-router.get('/get_changes_in_value', getValueChanges);
+router.get('/get_changes_in_value', getCryptosWithFluctuation);
 
 router.get('/should_sell', getShouldSell);
 
@@ -58,7 +58,7 @@ router.post('/add-to-favourites',
     [check('cryptoId').not().isEmpty().escape().trim()],
     addToFavourites);
 
-router.put('/remove-from-favourites',
+router.delete('/remove-from-favourites',
     [check('cryptoId').not().isEmpty().escape().trim()],
     removeFromFavourties);
 
