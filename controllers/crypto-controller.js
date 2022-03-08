@@ -167,7 +167,8 @@ const addToFavourites = async (req, res, next) => {
 
 const refreshFavouriteList = async (cryptoId, isDelete = false) => {
     try {
-
+        // it does not refresh
+        
         const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
         const identifiers = isDelete ? followedCryptos.filter(crypto => crypto?.identifier !== cryptoId) : followedCryptos;
         const prices = await Price.whereIn(identifiers);
