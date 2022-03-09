@@ -103,7 +103,6 @@ const signup = async (req, res, next) => {
     try {
         await createdAdmin.save();
     } catch (err) {
-        console.log({err, createdAdmin});
         return next(new HttpError(
             'Could not create user, please try again.',
             500
