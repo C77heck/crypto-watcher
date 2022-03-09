@@ -16,7 +16,6 @@ class Analysis {
         this.median = this.getMedian();
         this.isGoodBuy = this.getIsGoodBuy();
         this.isDecline = this.getIsDecline();
-        this.priceStability = this.checkPriceStability();
     }
 
     calc(price, prop) {
