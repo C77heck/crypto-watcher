@@ -170,20 +170,20 @@ const addToFavourites = async (req, res, next) => {
     res.json({message: 'Success'})
 }
 
-
-const refreshFavouriteList = async (cryptoId, isDelete = false) => {
-    try {
-        // it does not refresh
-
-        const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
-        const identifiers = isDelete ? followedCryptos.filter(crypto => crypto?.identifier !== cryptoId) : followedCryptos;
-        const prices = await Price.whereIn(identifiers);
-
-        await set(CRYPTOS_TO_FOLLOW, json(prices));
-    } catch (e) {
-        console.log('Something went wrong', e);
-    }
-}
+//
+// const refreshFavouriteList = async (cryptoId, isDelete = false) => {
+//     try {
+//         // it does not refresh
+//
+//         const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
+//         const identifiers = isDelete ? followedCryptos.filter(crypto => crypto?.identifier !== cryptoId) : followedCryptos;
+//         const prices = await Price.whereIn(identifiers);
+//
+//         await set(CRYPTOS_TO_FOLLOW, json(prices));
+//     } catch (e) {
+//         console.log('Something went wrong', e);
+//     }
+// }
 
 const removeFromFavourties = async (req, res, next) => {
     handleError(req, next);
@@ -357,7 +357,7 @@ const getFavourites = async (req, res, next) => {
     try {
         const favourites = await get(FAVOURITE_CRYPTOS)
 
-        res.json({items: favourites})
+        res.json({items: !favourites || favourites === 'null' ? [] : favourites})
     } catch (e) {
         return next(new HttpError(`Something went wrong`, 500));
     }

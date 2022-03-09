@@ -1,18 +1,18 @@
 const bcrypt = require('bcryptjs');
-const { validationResult } = require('express-validator');
+const {validationResult} = require('express-validator');
 const HttpError = require('../models/http-error');
 const Admin = require('../models/admin');
-const { handleError } = require("../libs/error-handler");
+const {handleError} = require("../libs/error-handler");
 const jwt = require('jsonwebtoken');
 
 const login = async (req, res, next) => {
     handleError(req, next);
 
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     let existingUser;
     try {
-        existingUser = await Admin.findOne({ email: email })
+        existingUser = await Admin.findOne({email: email})
     } catch (err) {
         return next(new HttpError(
             `Login failed, please try again later.`,
@@ -51,9 +51,9 @@ const login = async (req, res, next) => {
 
     let token;
     try {
-        token = jwt.sign({ userId: existingUser.id, email: existingUser.email },
+        token = jwt.sign({userId: existingUser.id, email: existingUser.email},
             process.env.JWT_KEY,
-            { expiresIn: '24h' }
+            {expiresIn: '24h'}
         )
     } catch (err) {
         console.log(err);
@@ -73,10 +73,10 @@ const login = async (req, res, next) => {
 
 const signup = async (req, res, next) => {
     handleError(req, next);
-    const { name, email, password, hint, answer } = req.body;
+    const {name, email, password, hint, answer} = req.body;
     let existingUser;
     try {
-        existingUser = await Admin.findOne({ email: email })
+        existingUser = await Admin.findOne({email: email})
     } catch (err) {
         existingUser = null;
     }
@@ -99,7 +99,7 @@ const signup = async (req, res, next) => {
         ))
     }
 
-    const createdAdmin = new Admin({ name, email, hint, answer, password: hashedPassword })
+    const createdAdmin = new Admin({name, email, hint, answer, password: hashedPassword})
     try {
         await createdAdmin.save();
     } catch (err) {
@@ -112,9 +112,9 @@ const signup = async (req, res, next) => {
 
     let token;
     try {
-        token = jwt.sign({ userId: createdAdmin.id, email: createdAdmin.email },
+        token = jwt.sign({userId: createdAdmin.id, email: createdAdmin.email},
             process.env.JWT_KEY,
-            { expiresIn: '24h' }
+            {expiresIn: '24h'}
         )
     } catch (err) {
         console.log(err);
@@ -124,7 +124,7 @@ const signup = async (req, res, next) => {
         ))
     }
 
-    res.status(201).json({ userData: { userId: createdAdmin.id, token: token } })
+    res.status(201).json({userData: {userId: createdAdmin.id, token: token}})
 }
 
 exports.login = login;
