@@ -20,7 +20,7 @@ class Analysis {
     }
 
     calc(price, prop) {
-        return price.price * (price[prop] < 0 ? (Math.abs(price[prop]) / 100) + 1 : (100 - (Math.abs(price[prop])) / 100));
+        return price.price * (price[prop] < 0 ? Math.abs((100 - price[prop]) / 100) : price[prop] / 100 + 1);
     }
 
     getMedian() {
