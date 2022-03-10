@@ -37,9 +37,9 @@ class Analysis {
                             ? {grade: 4, label: 'very good buy'} : {grade: 5, label: 'well below its median'};
         } else {
             return percentageDiff - 0.1 < 1
-                ? {grade: -1, label: 'steady price'} : percentageDiff - 0.2 < 1
-                    ? {grade: -2, label: 'okay sale'} : percentageDiff - 0.3 < 1
-                        ? {grade: -3, label: 'good sale'} : percentageDiff - 0.4 < 1
+                ? {grade: -1, label: 'steady price'} : percentageDiff - 0.2 > 1
+                    ? {grade: -2, label: 'okay sale'} : percentageDiff - 0.3 > 1
+                        ? {grade: -3, label: 'good sale'} : percentageDiff - 0.4 > 1
                             ? {grade: -4, label: 'very good sale'} : {grade: -5, label: 'excellent sale'};
         }
     }
