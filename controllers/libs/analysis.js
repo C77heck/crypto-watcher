@@ -11,10 +11,9 @@ class Analysis {
         this.priceChangeLast60Days = this.calc(price, 'percentChangeLast60Days');
         this.priceChangeLast90Days = this.calc(price, 'percentChangeLast90Days');
         this.isDecline = this.getIsDecline();
-        this.stabilityRating = this.checkPriceStability();
         this.median = this.getMedian();
+        this.stabilityRating = this.checkPriceStability();
         this.createdAt = new Date();
-        d
     }
 
     calc(price, prop) {
@@ -30,7 +29,7 @@ class Analysis {
     }
 
     checkPriceStability() {
-        const percentageDiff = Math.abs(this.price / this.median);
+        const percentageDiff = this.price / this.median;
         if (percentageDiff < 1) {
             return percentageDiff + 0.1 > 1
                 ? {grade: 1, label: 'weak buy'} : percentageDiff + 0.2 > 1
