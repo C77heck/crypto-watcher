@@ -10,7 +10,6 @@ class Analysis {
         this.priceChangeLastMonth = this.calc(price, 'percentChangeLastMonth');
         this.priceChangeLast60Days = this.calc(price, 'percentChangeLast60Days');
         this.priceChangeLast90Days = this.calc(price, 'percentChangeLast90Days');
-        this.isGoodBuy = this.getIsGoodBuy();
         this.isDecline = this.getIsDecline();
         this.stabilityRating = this.checkPriceStability();
         this.median = this.getMedian();
@@ -24,11 +23,6 @@ class Analysis {
         return (this.priceChangeLastMonth + this.priceChangeLast60Days + this.priceChangeLast90Days) / 3;
     }
 
-    getIsGoodBuy() {
-        // make a ranking with percentage based differences
-        return this.median > this.price;
-    }
-
     getIsDecline() {
         return this.price < this.priceChangeLastHour && this.price < this.priceChangeLastDay && this.price < this.priceChangeLastWeek;
     }
@@ -37,14 +31,16 @@ class Analysis {
         const percentageDiff = Math.abs(this.price / this.median);
         if (percentageDiff < 1) {
             return percentageDiff + 0.1 > 1
-                ? 'weak buy' : percentageDiff + 0.2 > 1
-                    ? 'okay buy' : percentageDiff + 0.3 > 1
-                        ? 'fairly good buy' : percentageDiff + 0.4 > 1 ? 'very good buy' : 'well below its median';
+                ? {grade: 1, label: 'weak buy'} : percentageDiff + 0.2 > 1
+                    ? {grade: 2, label: 'okay buy'} : percentageDiff + 0.3 > 1
+                        ? {grade: 3, label: 'fairly good buy'} : percentageDiff + 0.4 > 1
+                            ? {grade: 4, label: 'very good buy'} : {grade: 5, label: 'well below its median'};
         } else {
             return percentageDiff - 0.1 < 1
-                ? 'steady price' : percentageDiff - 0.2 < 1
-                    ? 'okay sale' : percentageDiff - 0.3 < 1
-                        ? 'good sale' : percentageDiff - 0.4 < 1 ? 'very good sale' : 'excellent sale';
+                ? {grade: -1, label: 'steady price'} : percentageDiff - 0.2 < 1
+                    ? {grade: -2, label: 'okay sale'} : percentageDiff - 0.3 < 1
+                        ? {grade: -3, label: 'good sale'} : percentageDiff - 0.4 < 1
+                            ? {grade: -4, label: 'very good sale'} : {grade: -5, label: 'excellent sale'};
         }
     }
 }
