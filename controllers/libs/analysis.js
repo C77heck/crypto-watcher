@@ -14,8 +14,6 @@ class Analysis {
         this.isDecline = this.getIsDecline();
         this.stabilityRating = this.checkPriceStability();
         this.median = this.getMedian();
-        this.isGoodBuy = this.getIsGoodBuy();
-        this.isDecline = this.getIsDecline();
     }
 
     calc(price, prop) {
@@ -36,17 +34,17 @@ class Analysis {
     }
 
     checkPriceStability() {
-        const percentageDiff = Math.abs(this.median / this.price);
+        const percentageDiff = Math.abs(this.price / this.median);
         if (percentageDiff < 1) {
-            return percentageDiff + 0.1 < 1
-                ? 'below strong' : percentageDiff + 0.2 < 1
-                    ? 'below okay' : percentageDiff + 0.3 < 1
-                        ? 'below weak' : percentageDiff + 0.4 < 1 ? 'below very weak' : 'Do not bother';
+            return percentageDiff + 0.1 > 1
+                ? 'weak buy' : percentageDiff + 0.2 > 1
+                    ? 'okay buy' : percentageDiff + 0.3 > 1
+                        ? 'fairly good buy' : percentageDiff + 0.4 > 1 ? 'very good buy' : 'well below its median';
         } else {
-            return percentageDiff + 0.1 < 1
-                ? 'above weak' : percentageDiff + 0.2 < 1
-                    ? 'above okay' : percentageDiff + 0.3 < 1
-                        ? 'above strong' : percentageDiff + 0.4 < 1 ? 'above very strong' : 'too strong. wait for decline';
+            return percentageDiff - 0.1 < 1
+                ? 'steady price' : percentageDiff - 0.2 < 1
+                    ? 'okay sale' : percentageDiff - 0.3 < 1
+                        ? 'good sale' : percentageDiff - 0.4 < 1 ? 'very good sale' : 'excellent sale';
         }
     }
 }
