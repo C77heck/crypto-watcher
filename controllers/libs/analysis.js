@@ -1,4 +1,5 @@
 const {CONSTANTS} = require("../../libs/constants");
+const tags = CONSTANTS.TAGS;
 
 class Analysis {
     constructor(price) {
@@ -16,7 +17,6 @@ class Analysis {
         this.median = this.getMedian();
         this.stabilityRating = this.checkPriceStability();
         this.createdAt = new Date();
-        this.tags = CONSTANTS.TAGS;
     }
 
     calc(price, prop) {
@@ -31,7 +31,7 @@ class Analysis {
         return this.price < this.priceChangeLastHour
         && this.price < this.priceChangeLastDay
         && this.price < this.priceChangeLastWeek
-            ? this.tags.DECLINING : this.tags.INCLINING;
+            ? tags.DECLINING : tags.INCLINING;
     }
 
     checkPriceStability() {
@@ -39,18 +39,18 @@ class Analysis {
 
         if (percentageDiff < 1) {
             return percentageDiff + 0.1 > 1
-                ? {grade: 1, label: this.tags.WEAK_BUY} : percentageDiff + 0.2 > 1
-                    ? {grade: 2, label: this.tags.OKAY_BUY} : percentageDiff + 0.3 > 1
-                        ? {grade: 3, label: this.tags.FAIRLY_GOOD_BUY} : percentageDiff + 0.4 > 1
-                            ? {grade: 4, label: this.tags.VERY_GOOD_BUY} : {grade: 5, label: this.tags.WELL_BELOW};
+                ? {grade: 1, label: tags.WEAK_BUY} : percentageDiff + 0.2 > 1
+                    ? {grade: 2, label: tags.OKAY_BUY} : percentageDiff + 0.3 > 1
+                        ? {grade: 3, label: tags.FAIRLY_GOOD_BUY} : percentageDiff + 0.4 > 1
+                            ? {grade: 4, label: tags.VERY_GOOD_BUY} : {grade: 5, label: tags.WELL_BELOW};
         } else {
             return percentageDiff - 0.1 > 1
-                ? {grade: -1, label: this.tags.STEADY_PRICE} : percentageDiff - 0.2 > 1
-                    ? {grade: -2, label: this.tags.OKAY_SALE} : percentageDiff - 0.3 > 1
-                        ? {grade: -3, label: this.tags.GOOD_SALE} : percentageDiff - 0.4 > 1
-                            ? {grade: -4, label: this.tags.VERY_GOOD_SALE} : {
+                ? {grade: -1, label: tags.STEADY_PRICE} : percentageDiff - 0.2 > 1
+                    ? {grade: -2, label: tags.OKAY_SALE} : percentageDiff - 0.3 > 1
+                        ? {grade: -3, label: tags.GOOD_SALE} : percentageDiff - 0.4 > 1
+                            ? {grade: -4, label: tags.VERY_GOOD_SALE} : {
                                 grade: -5,
-                                label: this.tags.EXCELLENT_SALE
+                                label: tags.EXCELLENT_SALE
                             };
         }
     }

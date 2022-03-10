@@ -6,7 +6,7 @@ const {numArray} = require("./libs/helpers");
 const {Fluctuation} = require("./libs/fluctuation");
 const {latestListings, newListings, allCryptos} = require("../libs/api-helper");
 const {get, set, clearAll, clear} = require('../libs/redis-client');
-const {json, removeDuplicates} = require('../libs/helpers');
+const {json, removeDuplicates, objectToArray} = require('../libs/helpers');
 const {terminal} = require("../libs/terminal-helper");
 const {
     CONSTANTS: {
@@ -20,7 +20,7 @@ const {
         PAGINATION_VAL,
         CURRENCY,
         TRANSACTION_FEE
-    }
+    }, CONSTANTS
 } = require('../libs/constants');
 const {handleError} = require("../libs/error-handler");
 
@@ -367,13 +367,15 @@ const getFavourites = async (req, res, next) => {
 const getCryptosWithFluctuation = async (req, res, next) => {
     let data = [];
     let total = 0;
+    const tags = objectToArray(CONSTANTS.TAGS || {});
+
     try {
         const pagination = await get(CRYPTO_PAGINATION);
         total = (pagination || []).length;
         const pageProp = `${CRYPTO_FLUCTUATION}-${req.query.page}`;
 
         if (!(pagination || []).includes(pageProp)) {
-            res.json({items: [], total: 0})
+            res.json({items: [], total: 0, tags: {}})
         }
         const items = await get(pageProp)
 
@@ -389,7 +391,7 @@ const getCryptosWithFluctuation = async (req, res, next) => {
         return next(new HttpError(`Something went wrong ${e}`, 500));
     }
 
-    res.json({items: data, total: total})
+    res.json({tags, items: data, total: total})
 }
 
 const getAllFromRedis = async (rounds) => {

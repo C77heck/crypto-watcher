@@ -23,6 +23,18 @@ const removeDuplicates = (array) => {
     return Array.from(new Set(array));
 }
 
+const objectToArray = (object) => {
+    const arr = [];
+    for (const prop in object) {
+        if (object.hasOwnProperty(prop)) {
+            arr.push(object[prop]);
+        }
+    }
+
+    return arr;
+};
+
 
 exports.json = json;
 exports.removeDuplicates = removeDuplicates;
+exports.objectToArray = objectToArray;
