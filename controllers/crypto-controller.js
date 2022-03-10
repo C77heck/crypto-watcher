@@ -96,9 +96,9 @@ const formatFluctuation = (prices, page, items = 20) => {
 const clearPriceDB = async () => {
     try {
         await Price.deleteMany({});
-        // await clearRedis();
+        await clearRedis();
     } catch (e) {
-
+        console.log(e);
     }
 }
 

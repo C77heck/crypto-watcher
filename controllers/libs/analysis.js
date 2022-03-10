@@ -13,6 +13,8 @@ class Analysis {
         this.isDecline = this.getIsDecline();
         this.stabilityRating = this.checkPriceStability();
         this.median = this.getMedian();
+        this.createdAt = new Date();
+        d
     }
 
     calc(price, prop) {
@@ -36,7 +38,7 @@ class Analysis {
                         ? {grade: 3, label: 'fairly good buy'} : percentageDiff + 0.4 > 1
                             ? {grade: 4, label: 'very good buy'} : {grade: 5, label: 'well below its median'};
         } else {
-            return percentageDiff - 0.1 < 1
+            return percentageDiff - 0.1 > 1
                 ? {grade: -1, label: 'steady price'} : percentageDiff - 0.2 > 1
                     ? {grade: -2, label: 'okay sale'} : percentageDiff - 0.3 > 1
                         ? {grade: -3, label: 'good sale'} : percentageDiff - 0.4 > 1
