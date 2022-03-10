@@ -96,7 +96,7 @@ const formatFluctuation = (prices, page, items = 20) => {
 const clearPriceDB = async () => {
     try {
         await Price.deleteMany({});
-        await clearRedis();
+        //  await clearRedis();
     } catch (e) {
         console.log(e);
     }
@@ -234,6 +234,7 @@ const addNewPurchase = async (req, res, next) => {
     handleError(req, next);
 
     const {name, symbol, price, amount, thresholds, identifier} = req.body;
+    // TODO -> probably add here the merging logic if we have by identifier we should just update the model.
     try {
         const createdPurchase = new Purchase({identifier, name, symbol, price, amount, thresholds, date: new Date()});
         await createdPurchase.save();
