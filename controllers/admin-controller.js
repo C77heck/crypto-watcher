@@ -30,11 +30,14 @@ const login = async (req, res, next) => {
     try {
         isValidPassword = await bcrypt.compare(password, existingUser.password)
     } catch (err) {
+        Admin.loginAttempts(existingUser._id, existingUser.status.loginAttempts + 1);
+
         return next(new HttpError(
             'Could not log you in, please check your credentials and try again',
             401
         ))
     }
+
     try {
         if (!isValidPassword) {
             Admin.loginAttempts(existingUser._id, existingUser.status.loginAttempts + 1);
@@ -49,6 +52,7 @@ const login = async (req, res, next) => {
     } catch (e) {
         console.log('FAILED', e);
     }
+
     let token;
     try {
         token = jwt.sign({userId: existingUser.id, email: existingUser.email},

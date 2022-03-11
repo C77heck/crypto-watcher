@@ -15,8 +15,9 @@ const adminSchema = new Schema({
     }
 });
 
+// TODO -> something is not fucking right here...
 adminSchema.statics.loginAttempts = function (id, num) {
-    return this.update({_id: id}, {status: {loginAttempts: num}});
+    return this.updateOne({_id: id}, {status: {loginAttempts: num}});
 }
 
 adminSchema.plugin(uniqueValidator);
