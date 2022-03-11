@@ -7,10 +7,9 @@ const jwt = require('jsonwebtoken');
 
 const login = async (req, res, next) => {
     handleError(req, next);
-
     const {email, password} = req.body;
-
     let existingUser;
+
     try {
         existingUser = await Admin.findOne({email: email})
     } catch (err) {
@@ -36,19 +35,20 @@ const login = async (req, res, next) => {
             401
         ))
     }
+    try {
+        if (!isValidPassword) {
+            Admin.loginAttempts(existingUser._id, existingUser.status.loginAttempts + 1);
 
-    if (!isValidPassword) {
-        existingUser.status.loginAttempts += 1;
-        await existingUser.save();
-        return next(new HttpError(
-            'Could not log you in, please check your credentials and try again',
-            401
-        ))
-    } else {
-        existingUser.status.passwordRequest = 0;
-        await existingUser.save();
+            return next(new HttpError(
+                'Could not log you in, please check your credentials and try again',
+                401
+            ))
+        } else {
+            Admin.loginAttempts(existingUser._id, 0);
+        }
+    } catch (e) {
+        console.log('FAILED', e);
     }
-
     let token;
     try {
         token = jwt.sign({userId: existingUser.id, email: existingUser.email},

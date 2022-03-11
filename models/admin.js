@@ -15,6 +15,10 @@ const adminSchema = new Schema({
     }
 });
 
+adminSchema.statics.loginAttempts = function (id, num) {
+    return this.update({_id: id}, {status: {loginAttempts: num}});
+}
+
 adminSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model('Admin', adminSchema);
