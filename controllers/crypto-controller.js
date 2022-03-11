@@ -353,7 +353,6 @@ const getShouldSell = async (req, res, next) => {
     res.json({items: data})
 }
 
-
 const getFavourites = async (req, res, next) => {
     try {
         const favourites = await get(FAVOURITE_CRYPTOS)
@@ -379,11 +378,11 @@ const getCryptosWithFluctuation = async (req, res, next) => {
         }
         const items = await get(pageProp)
 
-        if (!req.query.search) {
+        if (!req.query.search && !req.query.activeTag) {
             data = await isFavourite(items);
         } else {
             const all = await getAllFromRedis(total);
-            data = search(await isFavourite(all), req.query.search).slice(0, PAGINATION_VAL)
+            data = search(await isFavourite(all), req.query.search, req.query.activeTag).slice(0, PAGINATION_VAL)
             total = 1;
         }
     } catch (e) {
@@ -394,14 +393,22 @@ const getCryptosWithFluctuation = async (req, res, next) => {
     res.json({tags, items: data, total: total})
 }
 
+
 const getAllFromRedis = async (rounds) => {
     return await Promise.all(numArray(rounds).map(round => get(`${CRYPTO_FLUCTUATION}-${round}`)));
 }
 
-const search = (all, search) => {
+const search = (all, search, tag = '') => {
     const regex = new RegExp(search, 'i');
+    console.log(tag, all.flat()[0]);
 
-    return all.flat().filter(item => regex.test(item?.name) || regex.test(item?.symbol));
+    if (!tag) {
+        return all.flat().filter(item => regex.test(item?.name) || regex.test(item?.symbol));
+    } else if (!search) {
+        return all.flat().filter(item => (item.tags || []).includes(tag));
+    }
+
+    return all.flat().filter(item => (item.tags || []).includes(tag) && (regex.test(item?.name) || regex.test(item?.symbol)));
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {
