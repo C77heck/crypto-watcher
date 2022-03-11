@@ -170,21 +170,6 @@ const addToFavourites = async (req, res, next) => {
     res.json({message: 'Success'})
 }
 
-//
-// const refreshFavouriteList = async (cryptoId, isDelete = false) => {
-//     try {
-//         // it does not refresh
-//
-//         const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
-//         const identifiers = isDelete ? followedCryptos.filter(crypto => crypto?.identifier !== cryptoId) : followedCryptos;
-//         const prices = await Price.whereIn(identifiers);
-//
-//         await set(CRYPTOS_TO_FOLLOW, json(prices));
-//     } catch (e) {
-//         console.log('Something went wrong', e);
-//     }
-// }
-
 const removeFromFavourties = async (req, res, next) => {
     handleError(req, next);
     try {
@@ -382,7 +367,7 @@ const getCryptosWithFluctuation = async (req, res, next) => {
             data = await isFavourite(items);
         } else {
             const all = await getAllFromRedis(total);
-            data = search(await isFavourite(all), req.query.search, req.query.activeTag).slice(0, PAGINATION_VAL)
+            data = search(await isFavourite(all), req.query.search, req.query.activeTag).slice(0, PAGINATION_VAL + 30)
             total = 1;
         }
     } catch (e) {
@@ -400,15 +385,14 @@ const getAllFromRedis = async (rounds) => {
 
 const search = (all, search, tag = '') => {
     const regex = new RegExp(search, 'i');
-    console.log(tag, all.flat()[0]);
 
     if (!tag) {
         return all.flat().filter(item => regex.test(item?.name) || regex.test(item?.symbol));
     } else if (!search) {
-        return all.flat().filter(item => (item.tags || []).includes(tag));
+        return all.flat().filter(item => (item.analysis.tags || []).includes(tag));
     }
 
-    return all.flat().filter(item => (item.tags || []).includes(tag) && (regex.test(item?.name) || regex.test(item?.symbol)));
+    return all.flat().filter(item => (item.analysis.tags || []).includes(tag) && (regex.test(item?.name) || regex.test(item?.symbol)));
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {

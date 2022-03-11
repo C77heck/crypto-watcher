@@ -31,7 +31,6 @@ class Analysis {
     getIsDecline() {
         const tag = this.price < this.priceChangeLastHour
         && this.price < this.priceChangeLastDay
-        && this.price < this.priceChangeLastWeek
             ? tags.DECLINING : tags.INCLINING;
 
         this.tags.push(tag);
