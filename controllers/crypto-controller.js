@@ -151,7 +151,6 @@ const addToFavourites = async (req, res, next) => {
     try {
         const {cryptoId} = req.body;
         const priceInstance = await Price.getByIdentifier(cryptoId);
-
         const createdFavourite = new Favourite({
             name: priceInstance.name,
             symbol: priceInstance.symbol,
@@ -199,13 +198,11 @@ const refreshFavouriteList = async (cryptoId, isDelete = false) => {
     try {
         const followedCryptos = removeDuplicates((await get(CRYPTOS_TO_FOLLOW) || []).map(id => parseFloat(id)));
 
-        const identifiers = isDelete
+        const identifiersRaw = isDelete
             ? followedCryptos.filter(crypto => parseFloat(crypto) !== parseFloat(cryptoId))
             : [...(followedCryptos || []), cryptoId];
-
-        const prices = await Promise.all(identifiers.map((identifier) => {
-            return Price.getByIdentifier(identifier)
-        }));
+        const identifiers = identifiersRaw.filter(i => !!i || !isNaN(i))
+        const prices = await Promise.all(identifiers.map((identifier) => Price.getByIdentifier(identifier)));
 
         await set(CRYPTOS_TO_FOLLOW, json(identifiers));
 
