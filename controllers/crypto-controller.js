@@ -1,3 +1,4 @@
+const moment = require('moment');
 const HttpError = require('../models/http-error');
 const Price = require('../models/price');
 const Favourite = require('../models/favourite');
@@ -24,24 +25,32 @@ const {
 } = require('../libs/constants');
 const {handleError} = require("../libs/error-handler");
 
+const shouldRun = () => {
+    const currentHour = moment().get('hour');
+
+    return currentHour > 7 && currentHour < 17;
+}
+
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
-    console.log('we triggered latest listings');
-    try {
-        await clearPriceDB();
+    if (shouldRun()) {
+        try {
+            await clearPriceDB();
 
-        const listings = await latestListings();
+            const listings = await latestListings();
 
-        if (!!listings.status && !listings.status.error_code) {
-            await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
-            await saveAssets((listings?.data || []));
-            await saveFluctuationAsPaginated();
+            if (!!listings.status && !listings.status.error_code) {
+                await savePrices(listings?.data || [], listings?.status?.timestamp || new Date());
+                await saveAssets((listings?.data || []));
+                await saveFluctuationAsPaginated();
+            }
+
+            res.json({message: 'success'})
+        } catch (e) {
+            return next(new HttpError(`Sorry, something went wrong.${e}`, 500));
         }
-
-        res.json({message: 'success'})
-    } catch (e) {
-        return next(new HttpError(`Sorry, something went wrong.${e}`, 500));
     }
+    res.json({message: 'not the right time'})
 }
 
 const saveAssets = async (data) => {
@@ -310,8 +319,7 @@ const getPurcasedPrices = async (req, res, next) => {
 
 const getShouldSell = async (req, res, next) => {
     handleError(req, next);
-    console.log('we triggered getShouldSell');
-
+    console.log('WE GOT RUN SHOULDSELL');
     const purchasedCryptos = await Purchase.getAll();
 
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
@@ -388,8 +396,6 @@ const search = (all, search, tag = '') => {
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {
-    sendNotification(level, cryptoName);
-
     if (isThresholdHit) {
         sendNotification(level, cryptoName);
     }

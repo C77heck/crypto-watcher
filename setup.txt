@@ -1,6 +1,6 @@
 crontab -e
 
-*/3 * * * * shouldsell
-*/3 * * * * getlatestlistings
+*/3 * * * * ~/prof/crypto-watcher-api/should_sell.sh
+*/3 * * * * ~/prof/crypto-watcher-api/get_latest_listings.sh
 
 run the app as service once its ready
