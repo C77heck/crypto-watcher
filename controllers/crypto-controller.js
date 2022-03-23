@@ -26,7 +26,7 @@ const {handleError} = require("../libs/error-handler");
 
 const getLatestListings = async (req, res, next) => {
     handleError(req, next);
-
+    console.log('we triggered latest listings');
     try {
         await clearPriceDB();
 
@@ -310,6 +310,7 @@ const getPurcasedPrices = async (req, res, next) => {
 
 const getShouldSell = async (req, res, next) => {
     handleError(req, next);
+    console.log('we triggered getShouldSell');
 
     const purchasedCryptos = await Purchase.getAll();
 
