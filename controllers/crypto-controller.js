@@ -206,7 +206,7 @@ const refreshFavouriteList = async (cryptoId, isDelete = false) => {
 
         await set(CRYPTOS_TO_FOLLOW, json(identifiers));
 
-        await set(FAVOURITE_CRYPTOS, json(prices.flat()));
+        await set(FAVOURITE_CRYPTOS, json(prices.flat().map(price => new Fluctuation(price))));
     } catch (e) {
         console.log('Something went wrong', e);
     }
