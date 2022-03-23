@@ -18,9 +18,11 @@ const {
 } = require('../controllers/crypto-controller');
 const checkAuth = require('../middleware/check-auth');
 
-router.use(checkAuth);
+router.get('/should_sell', getShouldSell);
 
 router.get('/latest_listings', getLatestListings);
+
+router.use(checkAuth);
 
 router.get('/get_select_assets', getAssets);
 
@@ -31,8 +33,6 @@ router.get('/all_cryptos', getAllCryptos);
 router.get('/get_purchases', getPurcasedPrices);
 
 router.get('/get_changes_in_value', getCryptosWithFluctuation);
-
-router.get('/should_sell', getShouldSell);
 
 router.post('/add_new_purchase', [
     check('name').not().isEmpty().escape().trim(),

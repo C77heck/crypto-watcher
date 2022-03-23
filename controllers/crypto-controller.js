@@ -38,7 +38,7 @@ const getLatestListings = async (req, res, next) => {
             await saveFluctuationAsPaginated();
         }
 
-        res.json({listings})
+        res.json({message: 'success'})
     } catch (e) {
         return next(new HttpError(`Sorry, something went wrong.${e}`, 500));
     }
@@ -312,7 +312,6 @@ const getShouldSell = async (req, res, next) => {
     handleError(req, next);
 
     const purchasedCryptos = await Purchase.getAll();
-    const data = [];
 
     if (!!purchasedCryptos && !!purchasedCryptos.length) {
         for (const item of purchasedCryptos) {
@@ -320,19 +319,14 @@ const getShouldSell = async (req, res, next) => {
             const {first, second, third} = item.thresholds;
             const currentPrice = foundItems.price * item.amount;
             const percentageDiff = ((currentPrice * TRANSACTION_FEE) / (item.price * TRANSACTION_FEE)) * 100;
+
             getThreshold(first > percentageDiff, 'first', item.name);
             getThreshold(second > percentageDiff, 'second', item.name);
             getThreshold(third > percentageDiff, 'third', item.name);
-
-            data.push({
-                percentageDiff, ...item?._doc || {}, first, second, third, currentPrice,
-                priceBoughtFor: item.price,
-                potentialProfit: (currentPrice * TRANSACTION_FEE) - (item.price * TRANSACTION_FEE),
-            });
         }
     }
 
-    res.json({items: data})
+    res.json({message: 'done'})
 }
 
 const getFavourites = async (req, res, next) => {
@@ -393,6 +387,8 @@ const search = (all, search, tag = '') => {
 }
 
 const getThreshold = (isThresholdHit, level, cryptoName) => {
+    sendNotification(level, cryptoName);
+
     if (isThresholdHit) {
         sendNotification(level, cryptoName);
     }
