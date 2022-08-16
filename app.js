@@ -41,14 +41,12 @@ app.use((error, req, res, next) => {
     }
     const statusCode = error.code || 500;
 
-    res
-        .status(statusCode)
-        .json({statusCode, message: error.message || 'An unknown error occurred!'});
+    res.status(statusCode).json({statusCode, message: error.message || 'An unknown error occurred!'});
 });
 
 (async () => {
     try {
-        const port = process.env.PORT || 3030;
+        const port = process.env.PORT || 33453;
         await mongoose.connect(process.env.MONGO_URL);
         await app.listen(port, () => console.log(`app is listening on port: ${port}`));
     } catch (e) {
